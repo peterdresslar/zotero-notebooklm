@@ -8,20 +8,22 @@
   width="800"
   height="600"
 >
-  <vbox flex="1">
+  <vbox flex="1" style="overflow: hidden">
     <!-- Main content area: two-pane layout -->
-    <hbox flex="1">
+    <hbox flex="1" style="overflow: hidden">
       <!-- Left pane: Collection tree -->
-      <vbox id="notebooklm-collections-pane" width="260">
+      <vbox id="notebooklm-collections-pane" width="260" style="overflow: hidden">
         <label value="Collections" class="pane-header" />
-        <html:div id="notebooklm-collection-list" class="collection-list" />
+        <vbox flex="1" style="overflow-y: auto">
+          <html:div id="notebooklm-collection-list" class="collection-list" />
+        </vbox>
       </vbox>
 
       <!-- Splitter -->
       <splitter />
 
       <!-- Right pane: Search + Items -->
-      <vbox flex="1">
+      <vbox flex="1" style="overflow: hidden">
         <!-- Search bar -->
         <hbox id="notebooklm-search-bar" align="center">
           <label value="Search:" />
@@ -33,12 +35,14 @@
           />
         </hbox>
 
-        <!-- Item list -->
-        <html:div id="notebooklm-item-list" class="item-list" flex="1" />
+        <!-- Item list (scrollable) -->
+        <vbox flex="1" style="overflow-y: auto">
+          <html:div id="notebooklm-item-list" class="item-list" />
+        </vbox>
       </vbox>
     </hbox>
 
-    <!-- Bottom bar -->
+    <!-- Bottom bar (always visible) -->
     <hbox id="notebooklm-bottom-bar" align="center">
       <label id="notebooklm-selected-count" value="0 items selected" flex="1" />
       <button

@@ -230,7 +230,7 @@ function renderItemList(state: DialogState) {
     );
     row.className = `item-row${item.hasValidAttachment ? "" : " disabled"}`;
 
-    // Checkbox
+    // Checkbox (display-only — pointer-events disabled, row click handles toggle)
     const checkbox = state.doc.createElementNS(
       "http://www.w3.org/1999/xhtml",
       "input",
@@ -238,14 +238,7 @@ function renderItemList(state: DialogState) {
     checkbox.type = "checkbox";
     checkbox.disabled = !item.hasValidAttachment;
     checkbox.checked = state.selectedItemIds.has(item.id);
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
-        state.selectedItemIds.add(item.id);
-      } else {
-        state.selectedItemIds.delete(item.id);
-      }
-      updateBottomBar(state);
-    });
+    checkbox.style.pointerEvents = "none";
     row.appendChild(checkbox);
 
     // Title
@@ -288,17 +281,30 @@ function renderItemList(state: DialogState) {
       : "---";
     row.appendChild(typeBadge);
 
-    // Click anywhere on the row to toggle checkbox (if enabled)
+    // Click anywhere on the row to toggle (if enabled)
     if (item.hasValidAttachment) {
-      row.addEventListener("click", (e: Event) => {
-        if ((e.target as HTMLElement).tagName === "INPUT") return;
-        checkbox.checked = !checkbox.checked;
-        checkbox.dispatchEvent(new Event("change"));
+      row.addEventListener("click", () => {
+        toggleItem(state, item.id, checkbox);
       });
     }
 
     container.appendChild(row);
   }
+}
+
+function toggleItem(
+  state: DialogState,
+  itemId: number,
+  checkbox: HTMLInputElement,
+) {
+  if (state.selectedItemIds.has(itemId)) {
+    state.selectedItemIds.delete(itemId);
+    checkbox.checked = false;
+  } else {
+    state.selectedItemIds.add(itemId);
+    checkbox.checked = true;
+  }
+  updateBottomBar(state);
 }
 
 function getTypeLabel(contentType: string): string {
@@ -321,7 +327,17 @@ function updateBottomBar(state: DialogState) {
   exportBtn.setAttribute("disabled", String(count === 0));
 }
 
-function doExport(state: DialogState) {
+async function doExport(state: DialogState) {
+  const exportBtn = state.doc.getElementById("notebooklm-export-btn")!;
+
+  // Disable button and show progress
+  exportBtn.setAttribute("disabled", "true");
+  exportBtn.setAttribute("label", "Exporting...");
+
+  // Small delay to let any pending checkbox state settle
+  await new Promise((resolve) => state.win.setTimeout(resolve, 150));
+
+  // Re-read selected items from current state (captures all clicks)
   const selectedItems: StagedItem[] = [];
   for (const item of state.items) {
     if (
