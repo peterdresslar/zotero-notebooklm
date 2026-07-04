@@ -57,6 +57,27 @@ Prefer atomic commits:
 
 Link PRs to the relevant GitHub issue when one exists.
 
+## GitHub Ruleset
+
+This repository uses the active `Solo-to-Small Workflow` ruleset on the default
+branch, based on `peterdresslar/rulesets`.
+
+The ruleset enforces the baseline workflow:
+
+- Direct commits to `main` are blocked because all changes must go through a PR.
+- Human review is encouraged but not required by tooling for solo-maintainer
+  work; the required approval count is zero.
+- The default branch cannot be deleted.
+- Non-fast-forward updates to the default branch are blocked.
+
+Treat the PR as the required self-review surface even when no second reviewer is
+involved. When collaborating with another human or agent, ask for review when the
+change has meaningful risk, scope uncertainty, or security implications.
+
+If this repository later adopts the `Solo-to-Small-Testing` variant or another
+required-check ruleset, do not merge while required checks are red. Fix the
+failure or document an explicit maintainer bypass for emergencies.
+
 ## Commit Messages
 
 Follow GitHub-friendly commit messages. Use a short imperative subject, include
