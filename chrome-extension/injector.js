@@ -23,7 +23,7 @@
       console.log("[Zotero injector] Intercepted file-input .click()");
       interceptedInput = this;
       doInject();
-      return;                       // swallow — no native picker
+      return; // swallow — no native picker
     }
     return originalClick.apply(this, arguments);
   };
@@ -49,7 +49,9 @@
   if (originalShowOpenFilePicker) {
     window.showOpenFilePicker = async function () {
       if (pendingFiles) {
-        console.log("[Zotero injector] Intercepted window.showOpenFilePicker()");
+        console.log(
+          "[Zotero injector] Intercepted window.showOpenFilePicker()",
+        );
         try {
           const handles = pendingFiles.map(createFileHandle);
           stopWatchingForFileInputs();
@@ -83,7 +85,9 @@
       pendingFiles = files;
       interceptedInput = null;
       watchForFileInputs();
-      console.log("[Zotero injector] Armed with " + (files ? files.length : 0) + " files");
+      console.log(
+        "[Zotero injector] Armed with " + (files ? files.length : 0) + " files",
+      );
       window.postMessage(
         { type: "__zotero_from_injector", status: "armed" },
         "*",
@@ -101,7 +105,12 @@
           (found ? "found file input" : "no file input found"),
       );
       window.postMessage(
-        { type: "__zotero_from_injector", status: "inject-existing", found, reason: reason || null },
+        {
+          type: "__zotero_from_injector",
+          status: "inject-existing",
+          found,
+          reason: reason || null,
+        },
         "*",
       );
       if (found) {
@@ -122,7 +131,9 @@
       stopWatchingForFileInputs();
       pendingFiles = null;
       interceptedInput = null;
-      console.error("[Zotero injector] doInject called but missing input or files");
+      console.error(
+        "[Zotero injector] doInject called but missing input or files",
+      );
       reply(false, "Missing file input or file data");
       return;
     }
@@ -171,7 +182,9 @@
           interceptedInput = input;
           queueMicrotask(() => {
             if (pendingFiles && interceptedInput === input) {
-              console.log("[Zotero injector] Injecting into observed file input");
+              console.log(
+                "[Zotero injector] Injecting into observed file input",
+              );
               doInject();
             }
           });
@@ -200,12 +213,22 @@
       const input = findCandidateFileInput();
       if (!input) {
         if (pollCount % 10 === 0) {
-          console.log("[Zotero injector] Still polling for file input... (" + pollCount + "/" + maxPolls + ")");
+          console.log(
+            "[Zotero injector] Still polling for file input... (" +
+              pollCount +
+              "/" +
+              maxPolls +
+              ")",
+          );
         }
         return;
       }
 
-      console.log("[Zotero injector] Poll found file input after " + (pollCount * 500) + "ms");
+      console.log(
+        "[Zotero injector] Poll found file input after " +
+          pollCount * 500 +
+          "ms",
+      );
       interceptedInput = input;
       doInject();
     }, 500);
@@ -277,7 +300,9 @@
         return "granted";
       },
       async isSameEntry(other) {
-        return Boolean(other && other.kind === "file" && other.name === file.name);
+        return Boolean(
+          other && other.kind === "file" && other.name === file.name,
+        );
       },
     };
   }

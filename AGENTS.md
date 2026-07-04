@@ -106,7 +106,7 @@ because the squash commit will usually become the durable history entry.
 
 ## Package Management
 
-*Please* use `pnpm` for dependency installation and scripts.
+_Please_ use `pnpm` for dependency installation and scripts.
 
 If this repository still contains `package-lock.json`, migrate package-manager
 state in a dedicated commit before doing dependency work. Do not maintain npm and

@@ -8,11 +8,7 @@ import {
   clearStaged,
 } from "./staging";
 import { readFileAsBase64 } from "../utils/file";
-import type {
-  StatusResponse,
-  PendingResponse,
-  FileResponse,
-} from "../types";
+import type { StatusResponse, PendingResponse, FileResponse } from "../types";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -20,18 +16,14 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function sendJSON(
-  callback: Function,
-  status: number,
-  data: object,
-) {
+function sendJSON(callback: Function, status: number, data: object) {
   callback(status, "application/json", JSON.stringify(data), CORS_HEADERS);
 }
 
 export function registerEndpoints() {
   // Health check
-  const statusEndpoint =
-    (Zotero.Server.Endpoints["/notebooklm/status"] = function () {});
+  const statusEndpoint = (Zotero.Server.Endpoints["/notebooklm/status"] =
+    function () {});
   statusEndpoint.prototype = {
     supportedMethods: ["GET", "OPTIONS"],
     supportedDataTypes: ["application/json"],
@@ -47,8 +39,8 @@ export function registerEndpoints() {
   };
 
   // Get staged items metadata
-  const pendingEndpoint =
-    (Zotero.Server.Endpoints["/notebooklm/pending"] = function () {});
+  const pendingEndpoint = (Zotero.Server.Endpoints["/notebooklm/pending"] =
+    function () {});
   pendingEndpoint.prototype = {
     supportedMethods: ["GET", "OPTIONS"],
     supportedDataTypes: ["application/json"],
@@ -63,8 +55,8 @@ export function registerEndpoints() {
   };
 
   // Get file content by attachment ID (only for staged items)
-  const fileEndpoint =
-    (Zotero.Server.Endpoints["/notebooklm/file"] = function () {});
+  const fileEndpoint = (Zotero.Server.Endpoints["/notebooklm/file"] =
+    function () {});
   fileEndpoint.prototype = {
     supportedMethods: ["POST", "OPTIONS"],
     supportedDataTypes: ["application/json"],
@@ -110,7 +102,8 @@ export function registerEndpoints() {
         const base64Data = await readFileAsBase64(filePath);
         const response: FileResponse = {
           data: base64Data,
-          contentType: attachment.attachmentContentType || "application/octet-stream",
+          contentType:
+            attachment.attachmentContentType || "application/octet-stream",
           fileName:
             attachment.attachmentFilename ||
             filePath.split("/").pop() ||
@@ -126,8 +119,8 @@ export function registerEndpoints() {
   };
 
   // Clear staged items (called by Chrome extension after successful upload)
-  const clearEndpoint =
-    (Zotero.Server.Endpoints["/notebooklm/clear"] = function () {});
+  const clearEndpoint = (Zotero.Server.Endpoints["/notebooklm/clear"] =
+    function () {});
   clearEndpoint.prototype = {
     supportedMethods: ["DELETE", "OPTIONS"],
     supportedDataTypes: ["application/json"],

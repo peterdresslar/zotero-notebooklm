@@ -30,7 +30,11 @@ async function uploadBatch(files) {
   const resultPromise = new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       window.removeEventListener("message", handler);
-      reject(new Error("Upload timed out — NotebookLM never exposed a file input for interception."));
+      reject(
+        new Error(
+          "Upload timed out — NotebookLM never exposed a file input for interception.",
+        ),
+      );
     }, 70000);
 
     function handler(e) {
@@ -58,14 +62,18 @@ async function uploadBatch(files) {
   // directly and skip the fragile button path entirely.
   const injectedWithoutClick = await requestExistingInjection("before-click");
   if (injectedWithoutClick) {
-    console.log("[Zotero content] Injector found an existing file input before click");
+    console.log(
+      "[Zotero content] Injector found an existing file input before click",
+    );
     await resultPromise;
     await sleep(3000);
     return;
   }
 
   // Step 5: Fall back to clicking the visible upload control in the dialog.
-  const uploadBtn = findClickableByText("upload files", dialog) || findClickableByText("upload files");
+  const uploadBtn =
+    findClickableByText("upload files", dialog) ||
+    findClickableByText("upload files");
   if (!uploadBtn) {
     throw new Error("Could not find 'Upload files' button");
   }
@@ -77,8 +85,16 @@ async function uploadBatch(files) {
   // Angular uploader before it materializes the real file input.
   console.log("[Zotero content] Waiting for NotebookLM to expose a file input");
   void delayedExistingInjection(1000, "after-click", () => uploadFinished);
-  void delayedExistingInjection(5000, "delayed-after-click", () => uploadFinished);
-  void delayedExistingInjection(15000, "long-delayed-after-click", () => uploadFinished);
+  void delayedExistingInjection(
+    5000,
+    "delayed-after-click",
+    () => uploadFinished,
+  );
+  void delayedExistingInjection(
+    15000,
+    "long-delayed-after-click",
+    () => uploadFinished,
+  );
 
   // Step 6: Wait for injector to confirm success.
   await resultPromise;
@@ -97,7 +113,11 @@ async function armInjector(files) {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       window.removeEventListener("message", handler);
-      reject(new Error("Injector did not confirm armed state — is injector.js loaded?"));
+      reject(
+        new Error(
+          "Injector did not confirm armed state — is injector.js loaded?",
+        ),
+      );
     }, 5000);
 
     function handler(e) {
@@ -112,7 +132,9 @@ async function armInjector(files) {
 
     window.addEventListener("message", handler);
 
-    console.log("[Zotero content] Arming injector with " + files.length + " files");
+    console.log(
+      "[Zotero content] Arming injector with " + files.length + " files",
+    );
     window.postMessage(
       { type: "__zotero_to_injector", command: "arm", files: files },
       "*",
@@ -124,7 +146,9 @@ async function requestExistingInjection(reason) {
   return new Promise((resolve) => {
     const timeout = setTimeout(() => {
       window.removeEventListener("message", handler);
-      console.log("[Zotero content] Existing-input probe timed out (" + reason + ")");
+      console.log(
+        "[Zotero content] Existing-input probe timed out (" + reason + ")",
+      );
       resolve(false);
     }, 1000);
 
@@ -135,9 +159,17 @@ async function requestExistingInjection(reason) {
       clearTimeout(timeout);
       window.removeEventListener("message", handler);
       if (e.data.found) {
-        console.log("[Zotero content] Existing-input probe found a file input (" + reason + ")");
+        console.log(
+          "[Zotero content] Existing-input probe found a file input (" +
+            reason +
+            ")",
+        );
       } else {
-        console.log("[Zotero content] Existing-input probe found no file input (" + reason + ")");
+        console.log(
+          "[Zotero content] Existing-input probe found no file input (" +
+            reason +
+            ")",
+        );
       }
       resolve(Boolean(e.data.found));
     }
@@ -192,10 +224,18 @@ function findClickableByText(text, root = document) {
 function clickElement(el) {
   el.scrollIntoView({ block: "center", inline: "center" });
   el.dispatchEvent(
-    new MouseEvent("mousedown", { bubbles: true, cancelable: true, composed: true }),
+    new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    }),
   );
   el.dispatchEvent(
-    new MouseEvent("mouseup", { bubbles: true, cancelable: true, composed: true }),
+    new MouseEvent("mouseup", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    }),
   );
   el.click();
 }
