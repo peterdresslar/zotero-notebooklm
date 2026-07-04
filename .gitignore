@@ -1,9 +1,17 @@
 # dot files
 .DS_Store
 
+# Local editor and agent state
+.vscode/
+.idea/
+.cursor/
+.zed/
+.agents/
+.codex/
+*.code-workspace
+
 # Node.js
 node_modules
-pnpm-lock.yaml
 yarn.lock
 
 # TSC
