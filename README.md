@@ -19,7 +19,7 @@ It's a bit of a kludge: NotebookLM only offers an API to business customers as o
 
 ## About
 
-A Zotero 7 plugin and Chrome extension that lets you select articles from your Zotero library and import their PDFs directly into Google NotebookLM — no manual file wrangling required.
+A Zotero 7-9 plugin and Chrome extension that lets you select articles from your Zotero library and import their PDFs directly into Google NotebookLM — no manual file wrangling required.
 
 ## Why?
 
@@ -42,7 +42,7 @@ source checkout.
 
 - Node.js
 - pnpm
-- Zotero 7 or 8
+- Zotero 7, 8, or 9
 - Chrome or another Chromium browser that can load unpacked extensions
 
 ### Build the Zotero Plugin

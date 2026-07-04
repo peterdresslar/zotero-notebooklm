@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       zotero-plugin-toolkit:
-        specifier: ^5.1.0-beta.13
-        version: 5.1.2
+        specifier: ^5.1.4
+        version: 5.1.4
     devDependencies:
       '@types/chai':
         specifier: ^5.2.3
@@ -1428,8 +1428,8 @@ packages:
     engines: {node: '>=22.8.0'}
     hasBin: true
 
-  zotero-plugin-toolkit@5.1.2:
-    resolution: {integrity: sha512-mOxWGWCrwnkNoIAiXQv03La7pfiRyBeLmwbiQQDtm/6PvGAuRYZWTKahPPS+ORKblNs84lpMQ6CdPgwJm0ATZw==}
+  zotero-plugin-toolkit@5.1.4:
+    resolution: {integrity: sha512-MgQnlO0XDLgsyuHlXlKTnW7lLPpf5hzmn2t0FHgXvMIjv3TF0KXioQSWpwVhPfU5PTdA7jl4ZwJASdu5o4M0cA==}
     engines: {node: '>=18'}
 
   zotero-types@4.1.2:
@@ -2801,7 +2801,7 @@ snapshots:
       - jiti
       - magicast
 
-  zotero-plugin-toolkit@5.1.2: {}
+  zotero-plugin-toolkit@5.1.4: {}
 
   zotero-types@4.1.2:
     dependencies:
