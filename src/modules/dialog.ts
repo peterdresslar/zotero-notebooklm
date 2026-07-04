@@ -1,11 +1,7 @@
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { isWindowAlive } from "../utils/window";
-import {
-  getLibraries,
-  getCollectionTree,
-  flattenTree,
-} from "./collections";
+import { getLibraries, getCollectionTree, flattenTree } from "./collections";
 import { getItemsForCollection, searchItems } from "./items";
 import { stageItems } from "./staging";
 import type { CollectionNode, ItemRow, StagedItem } from "../types";
@@ -52,9 +48,7 @@ async function initDialog(win: Window) {
     Zotero.debug(`[NotebookLM] Found ${libraries.length} libraries`);
 
     const libraryID =
-      libraries.length > 0
-        ? libraries[0].id
-        : Zotero.Libraries.userLibraryID;
+      libraries.length > 0 ? libraries[0].id : Zotero.Libraries.userLibraryID;
     Zotero.debug(`[NotebookLM] Using library ID: ${libraryID}`);
 
     const state: DialogState = {
@@ -72,7 +66,9 @@ async function initDialog(win: Window) {
     const tree = await getCollectionTree(libraryID);
     Zotero.debug(`[NotebookLM] Got ${tree.length} top-level collections`);
     state.flatCollections = flattenTree(tree);
-    Zotero.debug(`[NotebookLM] Flattened to ${state.flatCollections.length} total collections`);
+    Zotero.debug(
+      `[NotebookLM] Flattened to ${state.flatCollections.length} total collections`,
+    );
     renderCollectionList(state);
 
     // Pre-select current collection if user has one selected in main pane
@@ -80,45 +76,47 @@ async function initDialog(win: Window) {
       const zoteroPane = Zotero.getActiveZoteroPane();
       const currentCollection = zoteroPane.getSelectedCollection();
       if (currentCollection) {
-        Zotero.debug(`[NotebookLM] Pre-selecting collection: ${currentCollection.name}`);
+        Zotero.debug(
+          `[NotebookLM] Pre-selecting collection: ${currentCollection.name}`,
+        );
         await selectCollection(state, currentCollection.id);
       }
     } catch {
       // No collection selected, that's fine
     }
 
-  // Wire up search
-  const searchInput = doc.getElementById(
-    "notebooklm-search-input",
-  ) as HTMLInputElement;
-  searchInput.addEventListener("input", () => {
-    if (state.searchTimeout) {
-      win.clearTimeout(state.searchTimeout);
-    }
-    state.searchTimeout = win.setTimeout(async () => {
-      const query = searchInput.value.trim();
-      if (query) {
-        state.selectedCollectionId = null;
-        highlightCollection(state, null);
-        state.items = await searchItems(state.libraryID, query);
-      } else if (state.selectedCollectionId) {
-        state.items = await getItemsForCollection(state.selectedCollectionId);
-      } else {
-        state.items = [];
+    // Wire up search
+    const searchInput = doc.getElementById(
+      "notebooklm-search-input",
+    ) as HTMLInputElement;
+    searchInput.addEventListener("input", () => {
+      if (state.searchTimeout) {
+        win.clearTimeout(state.searchTimeout);
       }
-      state.selectedItemIds.clear();
-      renderItemList(state);
-      updateBottomBar(state);
-    }, 300) as unknown as number;
-  });
+      state.searchTimeout = win.setTimeout(async () => {
+        const query = searchInput.value.trim();
+        if (query) {
+          state.selectedCollectionId = null;
+          highlightCollection(state, null);
+          state.items = await searchItems(state.libraryID, query);
+        } else if (state.selectedCollectionId) {
+          state.items = await getItemsForCollection(state.selectedCollectionId);
+        } else {
+          state.items = [];
+        }
+        state.selectedItemIds.clear();
+        renderItemList(state);
+        updateBottomBar(state);
+      }, 300) as unknown as number;
+    });
 
-  // Wire up export button
-  const exportBtn = doc.getElementById("notebooklm-export-btn")!;
-  exportBtn.addEventListener("command", () => doExport(state));
+    // Wire up export button
+    const exportBtn = doc.getElementById("notebooklm-export-btn")!;
+    exportBtn.addEventListener("command", () => doExport(state));
 
-  // Wire up cancel button
-  const cancelBtn = doc.getElementById("notebooklm-cancel-btn")!;
-  cancelBtn.addEventListener("command", () => win.close());
+    // Wire up cancel button
+    const cancelBtn = doc.getElementById("notebooklm-cancel-btn")!;
+    cancelBtn.addEventListener("command", () => win.close());
 
     Zotero.debug("[NotebookLM] Dialog init complete");
   } catch (e: any) {
@@ -187,10 +185,7 @@ async function selectCollection(state: DialogState, collectionId: number) {
   updateBottomBar(state);
 }
 
-function highlightCollection(
-  state: DialogState,
-  collectionId: number | null,
-) {
+function highlightCollection(state: DialogState, collectionId: number | null) {
   const container = state.doc.getElementById("notebooklm-collection-list")!;
   for (const el of Array.from(container.querySelectorAll(".collection-item"))) {
     const htmlEl = el as HTMLElement;

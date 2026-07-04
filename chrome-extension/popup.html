@@ -1,181 +1,216 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      width: 360px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 13px;
-      color: #202124;
-      background: #fff;
-    }
-    .header {
-      padding: 12px 16px;
-      background: #1a73e8;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .header h1 { font-size: 14px; font-weight: 600; }
-    .status-bar {
-      padding: 8px 16px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #dadce0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #5f6368;
-    }
-    .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #dadce0;
-    }
-    .status-dot.connected { background: #34a853; }
-    .status-dot.error { background: #ea4335; }
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 360px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        background: #fff;
+      }
+      .header {
+        padding: 12px 16px;
+        background: #1a73e8;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .header h1 {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .status-bar {
+        padding: 8px 16px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dadce0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #5f6368;
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #dadce0;
+      }
+      .status-dot.connected {
+        background: #34a853;
+      }
+      .status-dot.error {
+        background: #ea4335;
+      }
 
-    .content { padding: 12px 16px; }
+      .content {
+        padding: 12px 16px;
+      }
 
-    .item-list {
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #dadce0;
-      border-radius: 4px;
-      margin: 8px 0;
-    }
-    .item-row {
-      padding: 8px 12px;
-      border-bottom: 1px solid #f1f3f4;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .item-row:last-child { border-bottom: none; }
-    .item-row input[type="checkbox"] { flex-shrink: 0; }
-    .item-info { flex: 1; min-width: 0; }
-    .item-title {
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .item-meta {
-      font-size: 11px;
-      color: #5f6368;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .item-type {
-      font-size: 10px;
-      background: #e8f0fe;
-      color: #1a73e8;
-      padding: 2px 6px;
-      border-radius: 3px;
-      flex-shrink: 0;
-    }
+      .item-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        margin: 8px 0;
+      }
+      .item-row {
+        padding: 8px 12px;
+        border-bottom: 1px solid #f1f3f4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .item-row:last-child {
+        border-bottom: none;
+      }
+      .item-row input[type="checkbox"] {
+        flex-shrink: 0;
+      }
+      .item-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .item-title {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .item-meta {
+        font-size: 11px;
+        color: #5f6368;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .item-type {
+        font-size: 10px;
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 2px 6px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
 
-    .empty-state {
-      padding: 24px 16px;
-      text-align: center;
-      color: #5f6368;
-    }
-    .empty-state p { margin: 4px 0; }
+      .empty-state {
+        padding: 24px 16px;
+        text-align: center;
+        color: #5f6368;
+      }
+      .empty-state p {
+        margin: 4px 0;
+      }
 
-    .actions {
-      padding: 12px 16px;
-      border-top: 1px solid #dadce0;
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-    button {
-      padding: 8px 16px;
-      border: 1px solid #dadce0;
-      border-radius: 4px;
-      background: #fff;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    button:hover { background: #f8f9fa; }
-    button.primary {
-      background: #1a73e8;
-      color: #fff;
-      border-color: #1a73e8;
-    }
-    button.primary:hover { background: #1765cc; }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+      .actions {
+        padding: 12px 16px;
+        border-top: 1px solid #dadce0;
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      button {
+        padding: 8px 16px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button:hover {
+        background: #f8f9fa;
+      }
+      button.primary {
+        background: #1a73e8;
+        color: #fff;
+        border-color: #1a73e8;
+      }
+      button.primary:hover {
+        background: #1765cc;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
-    .progress {
-      margin: 8px 0;
-      display: none;
-    }
-    .progress.visible { display: block; }
-    .progress-bar {
-      height: 4px;
-      background: #e8eaed;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: #1a73e8;
-      width: 0%;
-      transition: width 0.3s;
-    }
-    .progress-text {
-      font-size: 11px;
-      color: #5f6368;
-      margin-top: 4px;
-    }
+      .progress {
+        margin: 8px 0;
+        display: none;
+      }
+      .progress.visible {
+        display: block;
+      }
+      .progress-bar {
+        height: 4px;
+        background: #e8eaed;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: #1a73e8;
+        width: 0%;
+        transition: width 0.3s;
+      }
+      .progress-text {
+        font-size: 11px;
+        color: #5f6368;
+        margin-top: 4px;
+      }
 
-    .instructions {
-      font-size: 11px;
-      color: #5f6368;
-      padding: 8px 16px;
-      background: #fef7e0;
-      border-bottom: 1px solid #fdd663;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Zotero → NotebookLM</h1>
-  </div>
-
-  <div class="status-bar">
-    <span id="zotero-dot" class="status-dot"></span>
-    <span id="zotero-status">Checking Zotero...</span>
-  </div>
-
-  <div id="instructions" class="instructions" style="display:none">
-    Navigate to <b>notebooklm.google.com</b> and open a notebook, then click Import.
-  </div>
-
-  <div id="content" class="content">
-    <div id="empty-state" class="empty-state">
-      <p>Checking for staged sources...</p>
+      .instructions {
+        font-size: 11px;
+        color: #5f6368;
+        padding: 8px 16px;
+        background: #fef7e0;
+        border-bottom: 1px solid #fdd663;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Zotero → NotebookLM</h1>
     </div>
-    <div id="item-list" class="item-list" style="display:none"></div>
-  </div>
 
-  <div class="progress" id="progress">
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-    <div class="progress-text" id="progress-text"></div>
-  </div>
+    <div class="status-bar">
+      <span id="zotero-dot" class="status-dot"></span>
+      <span id="zotero-status">Checking Zotero...</span>
+    </div>
 
-  <div class="actions">
-    <button id="refresh-btn" title="Refresh from Zotero">Refresh</button>
-    <button id="import-btn" class="primary" disabled>Import to NotebookLM</button>
-  </div>
+    <div id="instructions" class="instructions" style="display: none">
+      Navigate to <b>notebooklm.google.com</b> and open a notebook, then click
+      Import.
+    </div>
 
-  <script src="popup.js"></script>
-</body>
+    <div id="content" class="content">
+      <div id="empty-state" class="empty-state">
+        <p>Checking for staged sources...</p>
+      </div>
+      <div id="item-list" class="item-list" style="display: none"></div>
+    </div>
+
+    <div class="progress" id="progress">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text"></div>
+    </div>
+
+    <div class="actions">
+      <button id="refresh-btn" title="Refresh from Zotero">Refresh</button>
+      <button id="import-btn" class="primary" disabled>
+        Import to NotebookLM
+      </button>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
 </html>

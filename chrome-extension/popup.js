@@ -40,7 +40,7 @@ async function loadPending() {
       renderItems();
     }
     updateImportBtn();
-  } catch (e) {
+  } catch {
     dot.className = "status-dot error";
     statusText.textContent = "Cannot reach Zotero — is it running?";
     emptyState.innerHTML =
@@ -99,7 +99,9 @@ function updateImportBtn() {
   const count = selectedIds.size;
   btn.disabled = count === 0;
   btn.textContent =
-    count > 0 ? `Import ${count} source${count !== 1 ? "s" : ""} to NotebookLM` : "Import to NotebookLM";
+    count > 0
+      ? `Import ${count} source${count !== 1 ? "s" : ""} to NotebookLM`
+      : "Import to NotebookLM";
 }
 
 async function doImport() {
@@ -118,7 +120,8 @@ async function doImport() {
   // Check we're on NotebookLM
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.url?.includes("notebooklm.google.com")) {
-    progressText.textContent = "Please navigate to notebooklm.google.com first!";
+    progressText.textContent =
+      "Please navigate to notebooklm.google.com first!";
     progressFill.style.width = "0%";
     btn.disabled = false;
     btn.textContent = `Import ${toImport.length} sources to NotebookLM`;
@@ -128,7 +131,7 @@ async function doImport() {
   // Verify content script is loaded
   try {
     await chrome.tabs.sendMessage(tab.id, { action: "ping" });
-  } catch (_) {
+  } catch {
     progressText.textContent =
       "Content script not loaded — please refresh the NotebookLM tab and try again.";
     progressFill.style.width = "0%";
@@ -184,7 +187,7 @@ async function doImport() {
     // Clear staged items from Zotero optimistically
     try {
       await fetch(`${ZOTERO_BASE}/clear`, { method: "DELETE" });
-    } catch (_) {
+    } catch {
       // Non-critical
     }
 

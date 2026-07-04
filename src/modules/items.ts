@@ -25,8 +25,8 @@ export async function searchItems(
 
   const items = await Zotero.Items.getAsync(ids);
   // Filter out attachments and notes — we only want regular items
-  const regularItems = items.filter(
-    (item: Zotero.Item) => item.isRegularItem(),
+  const regularItems = items.filter((item: Zotero.Item) =>
+    item.isRegularItem(),
   );
   return enrichItems(regularItems);
 }
@@ -39,7 +39,7 @@ async function enrichItems(items: Zotero.Item[]): Promise<ItemRow[]> {
     const attachment = await getValidAttachment(item);
     rows.push({
       id: item.id,
-      title: item.getField("title") as string || "(Untitled)",
+      title: (item.getField("title") as string) || "(Untitled)",
       creators: formatCreators(item),
       year: (item.getField("year") as string) || "",
       hasValidAttachment: attachment !== null,

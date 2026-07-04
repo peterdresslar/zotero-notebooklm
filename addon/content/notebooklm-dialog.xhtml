@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<?xml-stylesheet href="chrome://zoteroNotebookLM/content/notebooklm-dialog.css" type="text/css"?>
+<?xml-stylesheet href="chrome://zoteroNotebookLM/content/notebooklm-dialog.css"
+type="text/css"?>
 
 <window
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -12,7 +13,11 @@
     <!-- Main content area: two-pane layout -->
     <hbox flex="1" style="overflow: hidden">
       <!-- Left pane: Collection tree -->
-      <vbox id="notebooklm-collections-pane" width="260" style="overflow: hidden">
+      <vbox
+        id="notebooklm-collections-pane"
+        width="260"
+        style="overflow: hidden"
+      >
         <label value="Collections" class="pane-header" />
         <vbox flex="1" style="overflow-y: auto">
           <html:div id="notebooklm-collection-list" class="collection-list" />
@@ -50,10 +55,7 @@
         label="Export to NotebookLM"
         disabled="true"
       />
-      <button
-        id="notebooklm-cancel-btn"
-        label="Cancel"
-      />
+      <button id="notebooklm-cancel-btn" label="Cancel" />
     </hbox>
   </vbox>
 </window>
