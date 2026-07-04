@@ -1,4 +1,9 @@
 const ZOTERO_BASE = "http://127.0.0.1:23119/notebooklm";
+const ZOTERO_REQUEST_HEADERS = { "zotero-allowed-request": "1" };
+const ZOTERO_JSON_HEADERS = {
+  ...ZOTERO_REQUEST_HEADERS,
+  "Content-Type": "application/json",
+};
 
 let stagedItems = [];
 let selectedIds = new Set();
@@ -17,7 +22,9 @@ async function loadPending() {
   const instructions = document.getElementById("instructions");
 
   try {
-    const res = await fetch(`${ZOTERO_BASE}/pending`);
+    const res = await fetch(`${ZOTERO_BASE}/pending`, {
+      headers: ZOTERO_REQUEST_HEADERS,
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
@@ -150,7 +157,7 @@ async function doImport() {
     try {
       const fileRes = await fetch(`${ZOTERO_BASE}/file`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: ZOTERO_JSON_HEADERS,
         body: JSON.stringify({ attachmentId: item.attachmentId }),
       });
       if (!fileRes.ok) throw new Error(`Failed to fetch ${item.fileName}`);
@@ -186,7 +193,10 @@ async function doImport() {
 
     // Clear staged items from Zotero optimistically
     try {
-      await fetch(`${ZOTERO_BASE}/clear`, { method: "DELETE" });
+      await fetch(`${ZOTERO_BASE}/clear`, {
+        method: "DELETE",
+        headers: ZOTERO_REQUEST_HEADERS,
+      });
     } catch {
       // Non-critical
     }

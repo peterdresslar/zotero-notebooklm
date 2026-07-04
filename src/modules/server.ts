@@ -13,7 +13,7 @@ import type { StatusResponse, PendingResponse, FileResponse } from "../types";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, zotero-allowed-request",
 };
 
 function sendJSON(callback: Function, status: number, data: object) {
