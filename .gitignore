@@ -25,3 +25,7 @@ logs
 
 # Build artifacts
 *.xpi
+
+# Local NotebookLM page captures
+docs/*.html
+docs/*.png

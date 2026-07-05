@@ -124,11 +124,11 @@ async function doImport() {
   btn.textContent = "Importing...";
   progress.classList.add("visible");
 
-  // Check we're on NotebookLM
+  // Check we're in an open NotebookLM notebook, not the notebook listing page.
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.url?.includes("notebooklm.google.com")) {
+  if (!isNotebookPage(tab?.url)) {
     progressText.textContent =
-      "Please navigate to notebooklm.google.com first!";
+      "Please open a NotebookLM notebook before importing sources.";
     progressFill.style.width = "0%";
     btn.disabled = false;
     btn.textContent = `Import ${toImport.length} sources to NotebookLM`;
@@ -218,6 +218,19 @@ function getTypeLabel(contentType) {
   if (contentType.includes("html")) return "HTML";
   if (contentType.includes("text")) return "TXT";
   return "FILE";
+}
+
+function isNotebookPage(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === "notebooklm.google.com" &&
+      parsed.pathname.startsWith("/notebook/")
+    );
+  } catch {
+    return false;
+  }
 }
 
 function esc(s) {
