@@ -40,6 +40,47 @@ type="text/css"?>
           />
         </hbox>
 
+        <!-- Item controls / sortable columns -->
+        <html:div id="notebooklm-item-header" class="item-header">
+          <html:input
+            id="notebooklm-select-all-checkbox"
+            type="checkbox"
+            title="Select all items with supported attachments"
+          />
+          <html:button
+            id="notebooklm-sort-title"
+            class="item-sort-button item-sort-title"
+            type="button"
+            data-sort-key="title"
+          >
+            Title
+          </html:button>
+          <html:button
+            id="notebooklm-sort-creators"
+            class="item-sort-button item-sort-creators"
+            type="button"
+            data-sort-key="creators"
+          >
+            Creators
+          </html:button>
+          <html:button
+            id="notebooklm-sort-year"
+            class="item-sort-button item-sort-year"
+            type="button"
+            data-sort-key="year"
+          >
+            Year
+          </html:button>
+          <html:button
+            id="notebooklm-sort-type"
+            class="item-sort-button item-sort-type"
+            type="button"
+            data-sort-key="type"
+          >
+            Type
+          </html:button>
+        </html:div>
+
         <!-- Item list (scrollable) -->
         <vbox flex="1" style="overflow-y: auto">
           <html:div id="notebooklm-item-list" class="item-list" />

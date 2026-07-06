@@ -82,6 +82,60 @@ window {
   padding: 4px;
 }
 
+.item-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid ThreeDShadow;
+  gap: 8px;
+  color: -moz-DialogText;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#notebooklm-select-all-checkbox {
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.item-sort-button {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item-sort-button:hover {
+  text-decoration: underline;
+}
+
+.item-sort-button.active {
+  color: Highlight;
+}
+
+.item-sort-title {
+  flex: 1;
+}
+
+.item-sort-creators {
+  flex: 0 0 180px;
+}
+
+.item-sort-year {
+  flex: 0 0 50px;
+  text-align: right;
+}
+
+.item-sort-type {
+  flex: 0 0 40px;
+  text-align: center;
+}
+
 .item-row {
   display: flex;
   align-items: center;
