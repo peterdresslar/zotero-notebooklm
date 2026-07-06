@@ -26,12 +26,44 @@ const UPLOAD_CONTROL_LABELS = [
 ];
 const UPLOAD_TRIGGER_MARKER = "data-zotero-upload-trigger";
 const ASSISTED_PROMPT_ID = "zotero-notebooklm-assisted-upload";
+const PAGE_NOTICE_ID = "zotero-notebooklm-page-notice";
+const UPLOAD_TIMEOUT_MS = 120000;
+const DELAYED_UPLOAD_TRIGGER_DELAYS_MS = [
+  2500, 10000, 30000, 45000, 60000, 90000,
+];
+const UPLOAD_TIMEOUT_ERROR_CODE = "zotero-upload-timeout";
+let assistedClickCleanup = null;
 
 async function uploadBatch(files) {
   if (!files || files.length === 0) {
     throw new Error("No files to upload");
   }
 
+  const startedFromNotebookDetail = isNotebookDetailPage();
+  try {
+    await ensureNotebookDetailPage();
+    await uploadFilesIntoCurrentNotebook(files);
+    hidePageNotice();
+  } catch (error) {
+    hideAssistedUploadPrompt();
+    if (error.code === UPLOAD_TIMEOUT_ERROR_CODE) {
+      showUploadTimeoutNotice();
+    } else if (!startedFromNotebookDetail && isNotebookDetailPage()) {
+      showPageNotice(
+        "Created a new NotebookLM notebook, but Zotero had trouble adding files. Try importing again from this notebook page.",
+        "error",
+      );
+    } else if (!startedFromNotebookDetail) {
+      showPageNotice(
+        "Zotero had trouble creating a new NotebookLM notebook. Open or create a notebook and try importing again.",
+        "error",
+      );
+    }
+    throw error;
+  }
+}
+
+async function uploadFilesIntoCurrentNotebook(files) {
   // Step 1: Arm the injector with file data before clicking any NotebookLM
   // controls. Current NotebookLM builds may attach upload behavior directly to
   // the Add sources button or to the persistent source-panel dropzone.
@@ -42,8 +74,8 @@ async function uploadBatch(files) {
     const timeout = setTimeout(() => {
       window.removeEventListener("message", handler);
       hideAssistedUploadPrompt();
-      reject(new Error(getUploadTimeoutMessage()));
-    }, 120000);
+      reject(createUploadTimeoutError());
+    }, UPLOAD_TIMEOUT_MS);
 
     function handler(e) {
       if (e.source !== window) return;
@@ -164,21 +196,148 @@ async function uploadBatch(files) {
   }
 
   showAssistedUploadPrompt(uploadControls[0], files.length);
+  const getAssistedUploadControl = () =>
+    uploadControls[0]?.isConnected
+      ? uploadControls[0]
+      : findUploadFileControls(document)[0] || null;
 
   // Keep the NotebookLM dialog open. Closing it too early can tear down the
   // Angular uploader before it materializes the real file input.
   console.log(
     "[Zotero content] Waiting for NotebookLM to expose an upload path; if prompted, click the highlighted Upload files button",
   );
-  void delayedUploadProbe(1000, "after-click-1s", () => uploadFinished);
-  void delayedUploadProbe(5000, "after-click-5s", () => uploadFinished);
-  void delayedUploadProbe(15000, "after-click-15s", () => uploadFinished);
+  void delayedExistingInjection(
+    1000,
+    "after-assisted-1s",
+    () => uploadFinished,
+  );
+  void delayedExistingInjection(
+    5000,
+    "after-assisted-5s",
+    () => uploadFinished,
+  );
+  void delayedExistingInjection(
+    15000,
+    "after-assisted-15s",
+    () => uploadFinished,
+  );
+  for (const delayMs of DELAYED_UPLOAD_TRIGGER_DELAYS_MS) {
+    const seconds = Math.round(delayMs / 1000);
+    void delayedUploadTrigger(
+      delayMs,
+      "delayed-trigger-" + seconds + "s",
+      getAssistedUploadControl,
+      () => uploadFinished,
+    );
+  }
 
   // Step 6: Wait for injector to confirm success.
   await resultPromise;
 
   // Give NotebookLM time to process
   await sleep(3000);
+}
+
+async function ensureNotebookDetailPage() {
+  if (isNotebookDetailPage()) return false;
+
+  showPageNotice("Creating a new NotebookLM notebook for Zotero sources...");
+  const createControl = findCreateNotebookControl();
+  if (!createControl) {
+    throw new Error("Could not find NotebookLM's create-new-notebook control");
+  }
+
+  console.log(
+    "[Zotero content] Creating a new notebook: " +
+      describeElement(createControl),
+  );
+  clickElement(createControl);
+
+  if (!(await waitForNotebookDetailPage(20000))) {
+    throw new Error("NotebookLM did not navigate to a new notebook");
+  }
+
+  showPageNotice("New notebook created. Adding Zotero sources...");
+  if (!(await waitForNotebookWorkspace(15000))) {
+    throw new Error("New NotebookLM notebook did not finish loading");
+  }
+
+  await sleep(750);
+  return true;
+}
+
+function findCreateNotebookControl() {
+  const candidates = [
+    ...findClickableByTextAll("create new notebook"),
+    ...findClickableByTextAll("create new"),
+  ];
+  const seen = new Set();
+  return candidates
+    .filter((el) => {
+      if (seen.has(el)) return false;
+      seen.add(el);
+      return true;
+    })
+    .sort(
+      (a, b) => scoreCreateNotebookControl(b) - scoreCreateNotebookControl(a),
+    )[0];
+}
+
+function scoreCreateNotebookControl(el) {
+  const tag = el.tagName.toLowerCase();
+  const role = normalizeText(el.getAttribute("role") || "");
+  const text = normalizeText(
+    (el.getAttribute("aria-label") || "") + " " + (el.textContent || ""),
+  );
+  let score = 0;
+
+  if (text.includes("create new notebook")) score += 60;
+  if (text.includes("create new")) score += 40;
+  if (tag === "button") score += 30;
+  if (role === "button") score += 20;
+  if (text.includes("notebook")) score += 10;
+
+  return score;
+}
+
+async function waitForNotebookDetailPage(timeoutMs) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    if (isNotebookDetailPage()) {
+      console.log("[Zotero content] Notebook detail page is active");
+      return true;
+    }
+    await sleep(250);
+  }
+  return false;
+}
+
+async function waitForNotebookWorkspace(timeoutMs) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    if (
+      document.querySelector("add-sources-dialog") ||
+      document.querySelector(".sources-list-dropzone") ||
+      findClickableByText("add sources")
+    ) {
+      console.log("[Zotero content] Notebook workspace is ready");
+      return true;
+    }
+    await sleep(250);
+  }
+  return false;
+}
+
+function isNotebookDetailPage(url = window.location.href) {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.hostname === "notebooklm.google.com" &&
+      parsed.pathname.startsWith("/notebook/")
+    );
+  } catch {
+    return false;
+  }
 }
 
 function getUploadTimeoutMessage() {
@@ -194,11 +353,49 @@ function getUploadTimeoutMessage() {
   );
 }
 
-async function delayedUploadProbe(delayMs, reason, isFinished) {
+function createUploadTimeoutError() {
+  const error = new Error(getUploadTimeoutMessage());
+  error.code = UPLOAD_TIMEOUT_ERROR_CODE;
+  return error;
+}
+
+async function delayedExistingInjection(delayMs, reason, isFinished) {
   await sleep(delayMs);
   if (isFinished()) return;
-  if (await requestExistingInjection(reason)) return;
-  await requestDropInjection(reason);
+  await requestExistingInjection(reason);
+}
+
+async function delayedUploadTrigger(delayMs, reason, getControl, isFinished) {
+  await sleep(delayMs);
+  if (isFinished()) return;
+
+  const control = getControl();
+  if (!control) {
+    console.log(
+      "[Zotero content] Delayed upload trigger found no control (" +
+        reason +
+        ")",
+    );
+    return;
+  }
+
+  console.log(
+    "[Zotero content] Delayed upload trigger attempt (" +
+      reason +
+      "): " +
+      describeElement(control),
+  );
+  if (await requestTriggerActivation(reason, control)) {
+    await sleep(350);
+    if (isFinished()) return;
+    if (await requestExistingInjection(reason + "-after-trigger")) return;
+  }
+
+  if (isFinished()) return;
+  clickElement(control);
+  await sleep(350);
+  if (isFinished()) return;
+  await requestExistingInjection(reason + "-after-click");
 }
 
 async function armInjector(files) {
@@ -513,10 +710,29 @@ function showAssistedUploadPrompt(uploadControl, fileCount) {
   hideAssistedUploadPrompt();
   if (!uploadControl || !document.body) return;
 
+  console.log(
+    "[Zotero content] Showing assisted upload prompt for a trusted NotebookLM click",
+  );
   uploadControl.setAttribute("data-zotero-assisted-upload", "true");
   uploadControl.style.outline = "3px solid #1a73e8";
   uploadControl.style.outlineOffset = "3px";
   uploadControl.scrollIntoView({ block: "center", inline: "center" });
+
+  const clickLogger = (event) => {
+    console.log(
+      "[Zotero content] Highlighted upload control clicked; trusted=" +
+        event.isTrusted,
+    );
+  };
+  uploadControl.addEventListener("click", clickLogger, {
+    capture: true,
+  });
+  assistedClickCleanup = () => {
+    uploadControl.removeEventListener("click", clickLogger, {
+      capture: true,
+    });
+    assistedClickCleanup = null;
+  };
 
   const prompt = document.createElement("div");
   prompt.id = ASSISTED_PROMPT_ID;
@@ -535,21 +751,61 @@ function showAssistedUploadPrompt(uploadControl, fileCount) {
     font: '13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   });
   prompt.textContent =
-    "Zotero has " +
     fileCount +
-    " source" +
+    " file" +
     (fileCount === 1 ? "" : "s") +
-    " ready. Click NotebookLM's highlighted Upload files button to finish importing.";
+    " ready from Zotero. Communicating with NotebookLM. Keep this notebook open until import starts.";
   document.body.appendChild(prompt);
 }
 
 function hideAssistedUploadPrompt() {
+  if (assistedClickCleanup) assistedClickCleanup();
   document.getElementById(ASSISTED_PROMPT_ID)?.remove();
   for (const el of document.querySelectorAll("[data-zotero-assisted-upload]")) {
     el.style.outline = "";
     el.style.outlineOffset = "";
     el.removeAttribute("data-zotero-assisted-upload");
   }
+}
+
+function showPageNotice(message, kind = "info") {
+  hidePageNotice();
+  if (!document.body) return;
+
+  const notice = document.createElement("div");
+  notice.id = PAGE_NOTICE_ID;
+  notice.setAttribute("role", kind === "error" ? "alert" : "status");
+  Object.assign(notice.style, {
+    position: "fixed",
+    top: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    zIndex: "2147483647",
+    maxWidth: "460px",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    background: kind === "error" ? "#b3261e" : "#202124",
+    color: "#fff",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.22)",
+    font: '13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    textAlign: "center",
+  });
+  notice.textContent = message;
+  document.body.appendChild(notice);
+}
+
+function hidePageNotice() {
+  document.getElementById(PAGE_NOTICE_ID)?.remove();
+}
+
+function showUploadTimeoutNotice() {
+  console.warn(
+    "[Zotero content] Upload timed out before NotebookLM confirmed file injection",
+  );
+  showPageNotice(
+    "Zotero did not get a successful response from NotebookLM. If the files are still missing, use Add sources to open the file dialog, then click Upload files.",
+    "error",
+  );
 }
 
 function isVisible(el) {

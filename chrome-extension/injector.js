@@ -312,11 +312,11 @@
       subtree: true,
     });
 
-    // Poll every 500ms for up to 60 seconds.  The MutationObserver handles
+    // Poll every 500ms for up to 120 seconds.  The MutationObserver handles
     // newly added nodes, but Angular may reuse or reveal an existing element
     // that the observer misses.
     let pollCount = 0;
-    const maxPolls = 120; // 120 × 500ms = 60s
+    const maxPolls = 240; // 240 x 500ms = 120s
     fallbackTimer = setInterval(() => {
       pollCount++;
       if (!pendingFiles || interceptedInput || pollCount > maxPolls) {
