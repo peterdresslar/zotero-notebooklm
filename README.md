@@ -10,7 +10,7 @@ a Zotero plugin to find and queue up those files.
 Once you do that, use the included Chrome browser plugin to quickly upload your Zotero files at the NotebookLM website. You get a fresh new notebook that works just
 like any other, and from which you can create summaries and audio conversations, as well as adding additional files.
 
-While the direct interface with the browser window is tricky to make perfect, we've made an effort to make the upload of Zotero articles to the web 
+While the direct interface with the browser window is tricky to make perfect, we've made an effort to make the upload of Zotero articles to the web
 as seemless as possible.
 
 <p align="center">🌴 🌴 🌴</p>

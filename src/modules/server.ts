@@ -1,4 +1,4 @@
-import { config } from "../../package.json";
+import { config, version } from "../../package.json";
 import {
   getStagedItems,
   getStagedCount,
@@ -32,7 +32,7 @@ export function registerEndpoints() {
         ready: isReady(),
         count: getStagedCount(),
         zoteroVersion: Zotero.version,
-        pluginVersion: config.addonName + " " + "0.1.0",
+        pluginVersion: config.addonName + " " + version,
       };
       sendJSON(sendResponseCallback, 200, response);
     },
