@@ -29,3 +29,5 @@ logs
 # Local NotebookLM page captures
 docs/*.html
 docs/*.png
+docs/downloads/*.html
+docs/downloads/*.png

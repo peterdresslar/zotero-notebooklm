@@ -1,15 +1,17 @@
 # Zotero → NotebookLM
 
-I use [Zotero](https://www.zotero.org/) as my source of truth for **all** my scientific literature, and whenever I look into a new topic, it starts with a new collection of the latest papers in Zotero. My favorite workflow:
+| **Update**: Version 0.2.0. We have resolved problems that may have occurred on upload of documents into the NotebookLM website interface. Please download and reinstall
+| the Chrome plugin from the most recent version.
 
-- take those new papers-->
-- dump them into a new [NotebookLM](https://notebooklm.google.com/) notebook-->
-- generate a audio "podcast"-->
-- and off to my favorite jogging trail with headphones!
+Want an easier way to build NotebookLM notebooks from Zotero files on your computer? Don't have Enterprise access to NotebookLM? This connector was built just
+for that purpose. The Zotero filesystem makes it tricky to find and upload the full text files that your NotebookLM notebook needs to work: this connector includes
+a Zotero plugin to find and queue up those files.
 
-Unfortunately, there's no native integration between Zotero and NotebookLM, and--what's worse--Zotero's article storage on a local file system is an utter pain to navigate, select from, and use from the NotebookLM interface's file dropzone. So, I built this plugin to automate the workflow.
+Once you do that, use the included Chrome browser plugin to quickly upload your Zotero files at the NotebookLM website. You get a fresh new notebook that works just
+like any other, and from which you can create summaries and audio conversations, as well as adding additional files.
 
-It's a bit of a kludge: NotebookLM only offers an API to business customers as of this time, and so we have to manipulate the web interface using a browser extension. This arrangement likely means that the overall setup is a bit brittle! But, as I _need_ to use it many times a week (what else am I going to listen to when I am huffing up [Puʻu Pia](https://maps.app.goo.gl/56yaE2tURJyo24Ma6)?), I am likely to invest the time to try and keep this project maintained---and I'd welcome requests and contributions.
+While the direct interface with the browser window is tricky to make perfect, we've made an effort to make the upload of Zotero articles to the web 
+as seemless as possible.
 
 <p align="center">🌴 🌴 🌴</p>
 
