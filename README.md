@@ -1,7 +1,8 @@
 # Zotero → NotebookLM
 
-| **Update**: Version 0.2.0. We have resolved problems that may have occurred on upload of documents into the NotebookLM website interface. Please download and reinstall
-| the Chrome plugin from the most recent version.
+> **Update for 0.2.0:** NotebookLM upload handling has been updated. If you
+> installed an earlier copy of the Chrome extension, download the latest release
+> and reload the Chrome extension from the new release package.
 
 Want an easier way to build NotebookLM notebooks from Zotero files on your computer? Don't have Enterprise access to NotebookLM? This connector was built just
 for that purpose. The Zotero filesystem makes it tricky to find and upload the full text files that your NotebookLM notebook needs to work: this connector includes
@@ -10,8 +11,9 @@ a Zotero plugin to find and queue up those files.
 Once you do that, use the included Chrome browser plugin to quickly upload your Zotero files at the NotebookLM website. You get a fresh new notebook that works just
 like any other, and from which you can create summaries and audio conversations, as well as adding additional files.
 
-While the direct interface with the browser window is tricky to make perfect, we've made an effort to make the upload of Zotero articles to the web
-as seemless as possible.
+While the direct interface with the browser window is tricky to make perfect,
+we've made an effort to make the upload of Zotero articles to the web as
+seamless as possible.
 
 <p align="center">🌴 🌴 🌴</p>
 
@@ -37,48 +39,69 @@ The system has two parts:
 
 ## Installation
 
-There is not yet a published release package. For now, install from a local
-source checkout.
+For normal use, install from the latest GitHub release. You do not need Node.js
+or pnpm unless you are building from source.
 
-### Prerequisites
+### Download
 
-- Node.js
+1. Open the
+   [latest release](https://github.com/peterdresslar/zotero-notebooklm/releases/latest).
+2. Download both release assets:
+   - `zotero-notebook-lm.xpi`
+   - `zotero-notebooklm-chrome-extension.zip`
+3. Unzip `zotero-notebooklm-chrome-extension.zip` somewhere you can keep it.
+   Chrome loads the extension from that folder, so do not delete it after
+   installation.
+
+If there is not a published release yet, use the source install steps below.
+
+### Install the Zotero Plugin
+
+1. Open Zotero.
+2. Go to **Tools → Add-ons**.
+3. Click the gear icon and choose **Install Add-on From File...**.
+4. Select `zotero-notebook-lm.xpi`.
+5. Restart Zotero if prompted.
+
+### Install the Chrome Extension
+
+1. Open `chrome://extensions/` in Chrome.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select the unzipped Chrome extension folder. It should be the folder that
+   contains `manifest.json`.
+5. Optional: pin **Zotero → NotebookLM** to your Chrome toolbar.
+
+To update the Chrome extension later, download the latest release, unzip the new
+Chrome extension package, then use **Reload** on `chrome://extensions/`.
+
+### Source Install
+
+Use this path only if you want to build the project locally.
+
+Prerequisites:
+
+- Node.js 22+
 - pnpm
+- Git
 - Zotero 7, 8, or 9
 - Chrome or another Chromium browser that can load unpacked extensions
-
-### Build the Zotero Plugin
 
 From the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm run build
+pnpm run package:release
 ```
 
-The built Zotero plugin is written to:
+The generated install files are:
 
 ```text
 .scaffold/build/zotero-notebook-lm.xpi
+.scaffold/build/zotero-notebooklm-chrome-extension.zip
 ```
 
-### Zotero Plugin
-
-1. In Zotero: **Tools → Add-ons → ⚙ → Install Add-on From File...**
-2. Select `.scaffold/build/zotero-notebook-lm.xpi`
-3. Restart Zotero if prompted
-
-If you rebuild the plugin after changing source code, reinstall the generated
-`.xpi` in Zotero.
-
-### Chrome Extension
-
-1. Open `chrome://extensions/` in Chrome
-2. Enable **Developer mode** (top right toggle)
-3. Click **Load unpacked** and select the `chrome-extension/` directory
-
-The Chrome extension has no build step. If you change files in
-`chrome-extension/`, reload the unpacked extension from `chrome://extensions/`.
+Install those files using the same Zotero and Chrome steps above.
 
 ## Usage
 
@@ -92,18 +115,24 @@ The Chrome extension has no build step. If you change files in
 
 ### Step 2: Import into NotebookLM
 
-1. Open [notebooklm.google.com](https://notebooklm.google.com) in Chrome and create or open a notebook
+1. Open [notebooklm.google.com](https://notebooklm.google.com) in Chrome. You
+   may open an existing notebook, or start from the main NotebookLM page and let
+   the extension create a new notebook.
 2. Click the Zotero → NotebookLM extension icon in your Chrome toolbar
 3. The popup will show your staged sources with a green "Zotero connected" indicator
 4. Click **Import to NotebookLM**
-5. The extension will fetch each file from Zotero, then upload them all to NotebookLM's sources panel
+5. The extension will fetch each file from Zotero, then upload them all to
+   NotebookLM's sources panel.
 
 ### Tips
 
 - Keep Zotero running while importing — the Chrome extension fetches files from Zotero's local server
 - You can deselect items in the Chrome popup if you change your mind
 - After a successful import, staged items are automatically cleared
-- If the import fails, refresh the NotebookLM tab and try again
+- Keep the NotebookLM tab open until the import starts.
+- If the import does not start, use **Add sources** in NotebookLM to open the
+  file dialog, then click **Upload files**.
+- If the import fails, refresh the NotebookLM tab and try again.
 
 ## Building
 
@@ -111,16 +140,21 @@ For a local source build:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm run build
+pnpm run package:release
 ```
 
 The Zotero plugin `.xpi` will be at `.scaffold/build/zotero-notebook-lm.xpi`.
+The Chrome extension zip will be at
+`.scaffold/build/zotero-notebooklm-chrome-extension.zip`.
 
-The Chrome extension requires no build step — load `chrome-extension/` directly.
+During development, the Chrome extension requires no build step. You can load
+`chrome-extension/` directly in `chrome://extensions/` and click **Reload** after
+editing extension files.
 
 ## Known Issues
 
-- Large batches (9+ files) may occasionally time out due to a race condition in the Chrome extension's file injection. If this happens, try importing in smaller batches.
+- Large batches may take longer to start because NotebookLM creates its upload
+  controls asynchronously. Keep the NotebookLM tab open until the import starts.
 - NotebookLM's DOM structure may change without notice, which could break the upload mechanism.
 
 ## License

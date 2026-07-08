@@ -26,6 +26,8 @@
     "build": "zotero-plugin build && tsc --noEmit",
     "lint:check": "prettier --check . && eslint .",
     "lint:fix": "prettier --write . && eslint . --fix",
+    "package:chrome": "mkdir -p .scaffold/build && rm -f .scaffold/build/zotero-notebooklm-chrome-extension.zip && cd chrome-extension && zip -qr ../.scaffold/build/zotero-notebooklm-chrome-extension.zip .",
+    "package:release": "pnpm run build && pnpm run package:chrome",
     "release": "zotero-plugin release",
     "test": "zotero-plugin test",
     "update-deps": "pnpm update"
