@@ -1,15 +1,13 @@
 # Zotero → NotebookLM
 
-> **Update for 0.2.0:** NotebookLM upload handling has been updated. If you
+> **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is improved. If you
 > installed an earlier copy of the Chrome extension, download the latest release
 > and reload the Chrome extension from the new release package.
 
-Want an easier way to build NotebookLM notebooks from Zotero files on your computer? Don't have Enterprise access to NotebookLM? This connector was built just
-for that purpose. The Zotero filesystem makes it tricky to find and upload the full text files that your NotebookLM notebook needs to work: this connector includes
-a Zotero plugin to find and queue up those files.
-
-Once you do that, use the included Chrome browser plugin to quickly upload your Zotero files at the NotebookLM website. You get a fresh new notebook that works just
-like any other, and from which you can create summaries and audio conversations, as well as adding additional files.
+Want an easier way to build NotebookLM notebooks from Zotero files on your
+computer? This connector lets you browse your Zotero collections, stage source
+files, and send them to NotebookLM without manually digging through Zotero's
+filesystem.
 
 While the direct interface with the browser window is tricky to make perfect,
 we've made an effort to make the upload of Zotero articles to the web as
@@ -21,21 +19,24 @@ seamless as possible.
   <img src="public/zotero-notebooklm.png" alt="Chrome extension popup showing 8 Zotero sources staged for import to NotebookLM" width="400">
 </p>
 
-## About
+## Why
 
-A Zotero 7-9 plugin and Chrome extension that lets you select articles from your Zotero library and import their PDFs directly into Google NotebookLM — no manual file wrangling required.
-
-## Why?
-
-Zotero stores PDFs in opaque, key-based folder names. Manually gathering files from a subcollection and uploading them to NotebookLM is tedious and error-prone. This tool automates the entire workflow: browse your collections in Zotero, pick your sources, and push them to NotebookLM with two clicks.
+Zotero stores PDFs in opaque, key-based folder names. Manually gathering files
+from a subcollection and uploading them to NotebookLM is tedious and
+error-prone. This tool automates the handoff: browse your collections in
+Zotero, pick your sources, and push them to NotebookLM.
 
 ## How It Works
 
 The system has two parts:
 
-1. **Zotero Plugin** — Adds an "Export to NotebookLM" dialog to Zotero's Tools menu. Browse your collection tree, search/filter items, and select which sources to stage. The plugin starts a local HTTP server that serves the staged files.
+1. **Zotero Plugin** — Adds an "Export to NotebookLM" dialog to Zotero's Tools
+   menu. Browse your collection tree, search/filter items, and select which
+   sources to stage. The plugin starts a local HTTP server that serves only the
+   staged files.
 
-2. **Chrome Extension** — Connects to the Zotero plugin's local server, fetches the staged files, and injects them into NotebookLM's upload interface.
+2. **Chrome Extension** — Connects to the Zotero plugin's local server, fetches
+   the staged files, and uploads them into NotebookLM.
 
 ## Installation
 
@@ -53,7 +54,7 @@ or pnpm unless you are building from source.
    Chrome loads the extension from that folder, so do not delete it after
    installation.
 
-If there is not a published release yet, use the source install steps below.
+If there is not a published release yet, use the source build steps below.
 
 ### Install the Zotero Plugin
 
@@ -75,7 +76,7 @@ If there is not a published release yet, use the source install steps below.
 To update the Chrome extension later, download the latest release, unzip the new
 Chrome extension package, then use **Reload** on `chrome://extensions/`.
 
-### Source Install
+### Source Build
 
 Use this path only if you want to build the project locally.
 
@@ -126,7 +127,8 @@ Install those files using the same Zotero and Chrome steps above.
 
 ### Tips
 
-- Keep Zotero running while importing — the Chrome extension fetches files from Zotero's local server
+- Keep Zotero running while importing — the Chrome extension fetches files from
+  Zotero's local server.
 - You can deselect items in the Chrome popup if you change your mind
 - After a successful import, staged items are automatically cleared
 - Keep the NotebookLM tab open until the import starts.
@@ -134,28 +136,26 @@ Install those files using the same Zotero and Chrome steps above.
   file dialog, then click **Upload files**.
 - If the import fails, refresh the NotebookLM tab and try again.
 
-## Building
+## Development
 
-For a local source build:
+Use the source build command above to produce release-style install files.
+
+During Chrome-extension development, you can load `chrome-extension/` directly
+in `chrome://extensions/` and click **Reload** after editing extension files.
+
+Before opening a PR, run:
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm run package:release
+pnpm run build
+pnpm run lint:check
 ```
-
-The Zotero plugin `.xpi` will be at `.scaffold/build/zotero-notebook-lm.xpi`.
-The Chrome extension zip will be at
-`.scaffold/build/zotero-notebooklm-chrome-extension.zip`.
-
-During development, the Chrome extension requires no build step. You can load
-`chrome-extension/` directly in `chrome://extensions/` and click **Reload** after
-editing extension files.
 
 ## Known Issues
 
 - Large batches may take longer to start because NotebookLM creates its upload
-  controls asynchronously. Keep the NotebookLM tab open until the import starts.
-- NotebookLM's DOM structure may change without notice, which could break the upload mechanism.
+  controls asynchronously.
+- NotebookLM's DOM structure may change without notice, which could break the
+  upload mechanism.
 
 ## License
 
