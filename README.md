@@ -20,7 +20,7 @@ seamless as possible.
 <p align="center">🌴 🌴 🌴</p>
 
 <p align="center">
-  <img src="public/zotero-notebooklm.png" alt="Chrome extension popup showing 8 Zotero sources staged for import to Gemini Notebook" width="400">
+  <img src="public/zotero-gemini-notebook.png" alt="Chrome extension popup showing 6 Zotero sources staged for import to Gemini Notebook" width="400">
 </p>
 
 ## Why
