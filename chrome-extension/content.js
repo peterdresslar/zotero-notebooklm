@@ -50,12 +50,12 @@ async function uploadBatch(files) {
       showUploadTimeoutNotice();
     } else if (!startedFromNotebookDetail && isNotebookDetailPage()) {
       showPageNotice(
-        "Created a new NotebookLM notebook, but Zotero had trouble adding files. Try importing again from this notebook page.",
+        "Created a new notebook in Gemini Notebook, but Zotero had trouble adding files. Try importing again from this notebook page.",
         "error",
       );
     } else if (!startedFromNotebookDetail) {
       showPageNotice(
-        "Zotero had trouble creating a new NotebookLM notebook. Open or create a notebook and try importing again.",
+        "Zotero had trouble creating a new notebook in Gemini Notebook. Open or create a notebook and try importing again.",
         "error",
       );
     }
@@ -241,10 +241,14 @@ async function uploadFilesIntoCurrentNotebook(files) {
 async function ensureNotebookDetailPage() {
   if (isNotebookDetailPage()) return false;
 
-  showPageNotice("Creating a new NotebookLM notebook for Zotero sources...");
+  showPageNotice(
+    "Creating a new notebook in Gemini Notebook for Zotero sources...",
+  );
   const createControl = findCreateNotebookControl();
   if (!createControl) {
-    throw new Error("Could not find NotebookLM's create-new-notebook control");
+    throw new Error(
+      "Could not find Gemini Notebook's create-new-notebook control",
+    );
   }
 
   console.log(
@@ -254,12 +258,12 @@ async function ensureNotebookDetailPage() {
   clickElement(createControl);
 
   if (!(await waitForNotebookDetailPage(20000))) {
-    throw new Error("NotebookLM did not navigate to a new notebook");
+    throw new Error("Gemini Notebook did not navigate to a new notebook");
   }
 
   showPageNotice("New notebook created. Adding Zotero sources...");
   if (!(await waitForNotebookWorkspace(15000))) {
-    throw new Error("New NotebookLM notebook did not finish loading");
+    throw new Error("New notebook in Gemini Notebook did not finish loading");
   }
 
   await sleep(750);
@@ -347,7 +351,7 @@ function getUploadTimeoutMessage() {
     ? controls.map(describeElement).join("; ")
     : "none";
   return (
-    "Upload timed out — NotebookLM never exposed a file input or accepted a " +
+    "Upload timed out — Gemini Notebook never exposed a file input or accepted a " +
     "synthetic drop. Upload controls seen: " +
     controlSummary
   );
@@ -754,7 +758,7 @@ function showAssistedUploadPrompt(uploadControl, fileCount) {
     fileCount +
     " file" +
     (fileCount === 1 ? "" : "s") +
-    " ready from Zotero. Communicating with NotebookLM. Keep this notebook open until import starts.";
+    " ready from Zotero. Communicating with Gemini Notebook. Keep this notebook open until import starts.";
   document.body.appendChild(prompt);
 }
 
@@ -803,7 +807,7 @@ function showUploadTimeoutNotice() {
     "[Zotero content] Upload timed out before NotebookLM confirmed file injection",
   );
   showPageNotice(
-    "Zotero did not get a successful response from NotebookLM. If the files are still missing, use Add sources to open the file dialog, then click Upload files.",
+    "Zotero did not get a successful response from Gemini Notebook. If the files are still missing, use Add sources to open the file dialog, then click Upload files.",
     "error",
   );
 }

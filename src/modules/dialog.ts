@@ -547,7 +547,7 @@ async function doExport(state: DialogState) {
     closeTime: 8000,
   })
     .createLine({
-      text: `${selectedItems.length} item${selectedItems.length === 1 ? "" : "s"} staged. Open the NotebookLM extension in Chrome to create your notebook.`,
+      text: `${selectedItems.length} item${selectedItems.length === 1 ? "" : "s"} staged. Open Zotero → Gemini Notebook in Chrome to create your notebook.`,
       type: "success",
       progress: 100,
     })

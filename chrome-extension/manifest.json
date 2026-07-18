@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Zotero to NotebookLM",
+  "name": "Zotero to Gemini Notebook",
   "version": "0.2.0",
-  "description": "Import staged Zotero sources into Google NotebookLM",
+  "description": "Import staged Zotero sources into Gemini Notebook",
   "permissions": ["activeTab"],
   "host_permissions": [
     "http://127.0.0.1:23119/*",

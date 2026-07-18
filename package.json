@@ -1,10 +1,10 @@
 {
-  "name": "zotero-notebooklm",
+  "name": "zotero-gemini-notebook",
   "type": "module",
   "version": "0.2.0",
-  "description": "Export Zotero items to Google NotebookLM",
+  "description": "Export Zotero items to Gemini Notebook (formerly NotebookLM)",
   "config": {
-    "addonName": "Zotero NotebookLM",
+    "addonName": "Zotero Gemini Notebook",
     "addonID": "zotero-notebooklm@peterdresslar.com",
     "addonRef": "zoteroNotebookLM",
     "addonInstance": "ZoteroNotebookLM",
@@ -12,13 +12,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/peterdresslar/zotero-notebooklm.git"
+    "url": "git+https://github.com/peterdresslar/zotero-gemini-notebook.git"
   },
   "author": "peterdresslar",
   "bugs": {
-    "url": "https://github.com/peterdresslar/zotero-notebooklm/issues"
+    "url": "https://github.com/peterdresslar/zotero-gemini-notebook/issues"
   },
-  "homepage": "https://github.com/peterdresslar/zotero-notebooklm#readme",
+  "homepage": "https://github.com/peterdresslar/zotero-gemini-notebook#readme",
   "license": "MIT",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -26,7 +26,7 @@
     "build": "zotero-plugin build && tsc --noEmit",
     "lint:check": "prettier --check . && eslint .",
     "lint:fix": "prettier --write . && eslint . --fix",
-    "package:chrome": "mkdir -p .scaffold/build && rm -f .scaffold/build/zotero-notebooklm-chrome-extension.zip && cd chrome-extension && zip -qr ../.scaffold/build/zotero-notebooklm-chrome-extension.zip .",
+    "package:chrome": "mkdir -p .scaffold/build && rm -f .scaffold/build/zotero-gemini-notebook-chrome-extension.zip && cd chrome-extension && zip -qr ../.scaffold/build/zotero-gemini-notebook-chrome-extension.zip .",
     "package:release": "pnpm run build && pnpm run package:chrome",
     "release": "zotero-plugin release",
     "test": "zotero-plugin test",
