@@ -7,25 +7,27 @@ planned, changed, reviewed, and shipped.
 ## Project Boundary
 
 This project is a Zotero plugin plus a Chrome extension for moving staged Zotero
-sources into Google NotebookLM. Keep changes inside that product boundary unless
-an issue or maintainer decision explicitly expands the scope.
+sources into Gemini Notebook (formerly NotebookLM). Keep changes inside that
+product boundary unless an issue or maintainer decision explicitly expands the
+scope.
 
 An agent-facing or MCP-style interface is within scope when it serves the same
 workflow: allowing a trusted chatbot or automation client to select Zotero
-collections or items and create or populate a NotebookLM notebook from those
-sources. Such work should reuse the same staging, permission, and local-server
-safety boundaries rather than opening broad library or filesystem access.
+collections or items and create or populate a notebook in Gemini Notebook from
+those sources. Such work should reuse the same staging, permission, and
+local-server safety boundaries rather than opening broad library or filesystem
+access.
 
-The integration with NotebookLM is browser-DOM automation against a third-party
-web app because stable public NotebookLM API access is not generally available
+The integration with Gemini Notebook is browser-DOM automation against a
+third-party web app because stable public API access is not generally available
 to non-business users. Assume this DOM path is inherently brittle. Prefer small,
 well-isolated changes that make the failure modes easier to understand and
 recover from.
 
-If supported NotebookLM API access becomes available, that should improve the
-transport path rather than obsolete the project. Keep the product centered on
-moving Zotero-managed sources into NotebookLM with the least brittle available
-mechanism for the user.
+If supported Gemini Notebook API access becomes available, that should improve
+the transport path rather than obsolete the project. Keep the product centered
+on moving Zotero-managed sources into Gemini Notebook with the least brittle
+available mechanism for the user.
 
 ## Roles
 
@@ -136,7 +138,7 @@ touched. For typical code changes, expect:
 - `pnpm run lint:check`
 
 When automation cannot cover the behavior, document the manual verification in
-the PR. Browser-extension and NotebookLM DOM behavior usually needs manual
+the PR. Browser-extension and Gemini Notebook DOM behavior usually needs manual
 testing in Chrome with Zotero running.
 
 ## Extension And Local Server Safety
@@ -149,13 +151,13 @@ host permissions, content-script matches, or local server endpoints without a
 clear reason.
 
 Do not log file contents, credentials, browser cookies, private library data, or
-NotebookLM page state.
+Gemini Notebook page state.
 
 ## Browser Automation Boundary
 
-Keep NotebookLM selectors and injection logic isolated in the Chrome extension.
-When NotebookLM changes its DOM, fix the smallest reliable interaction path and
-leave notes about what was manually verified.
+Keep Gemini Notebook selectors and injection logic isolated in the Chrome
+extension. When Gemini Notebook changes its DOM, fix the smallest reliable
+interaction path and leave notes about what was manually verified.
 
 Prefer explicit loading, error, retry, and timeout states over silent failure.
 

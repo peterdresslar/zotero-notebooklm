@@ -1,13 +1,17 @@
-# Zotero → NotebookLM
+# Zotero → Gemini Notebook
+
+> Google renamed NotebookLM to Gemini Notebook in July 2026. This project was
+> formerly called Zotero → NotebookLM; existing installations and legacy
+> integration identifiers remain supported.
 
 > **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is improved. If you
 > installed an earlier copy of the Chrome extension, download the latest release
 > and reload the Chrome extension from the new release package.
 
-Want an easier way to build NotebookLM notebooks from Zotero files on your
-computer? This connector lets you browse your Zotero collections, stage source
-files, and send them to NotebookLM without manually digging through Zotero's
-filesystem.
+Want an easier way to build notebooks in Gemini Notebook from Zotero files on
+your computer? This connector lets you browse your Zotero collections, stage
+source files, and send them to Gemini Notebook without manually digging through
+Zotero's filesystem.
 
 While the direct interface with the browser window is tricky to make perfect,
 we've made an effort to make the upload of Zotero articles to the web as
@@ -16,27 +20,27 @@ seamless as possible.
 <p align="center">🌴 🌴 🌴</p>
 
 <p align="center">
-  <img src="public/zotero-notebooklm.png" alt="Chrome extension popup showing 8 Zotero sources staged for import to NotebookLM" width="400">
+  <img src="public/zotero-gemini-notebook.png" alt="Chrome extension popup showing 6 Zotero sources staged for import to Gemini Notebook" width="400">
 </p>
 
 ## Why
 
 Zotero stores PDFs in opaque, key-based folder names. Manually gathering files
-from a subcollection and uploading them to NotebookLM is tedious and
+from a subcollection and uploading them to Gemini Notebook is tedious and
 error-prone. This tool automates the handoff: browse your collections in
-Zotero, pick your sources, and push them to NotebookLM.
+Zotero, pick your sources, and push them to Gemini Notebook.
 
 ## How It Works
 
 The system has two parts:
 
-1. **Zotero Plugin** — Adds an "Export to NotebookLM" dialog to Zotero's Tools
-   menu. Browse your collection tree, search/filter items, and select which
-   sources to stage. The plugin starts a local HTTP server that serves only the
-   staged files.
+1. **Zotero Plugin** — Adds an "Export to Gemini Notebook" dialog to Zotero's
+   Tools menu. Browse your collection tree, search/filter items, and select
+   which sources to stage. The plugin starts a local HTTP server that serves
+   only the staged files.
 
 2. **Chrome Extension** — Connects to the Zotero plugin's local server, fetches
-   the staged files, and uploads them into NotebookLM.
+   the staged files, and uploads them into Gemini Notebook.
 
 ## Installation
 
@@ -46,8 +50,9 @@ or pnpm unless you are building from source.
 ### Download
 
 1. Open the
-   [latest release](https://github.com/peterdresslar/zotero-notebooklm/releases/latest).
-2. Download both release assets:
+   [latest release](https://github.com/peterdresslar/zotero-gemini-notebook/releases/latest).
+2. Download both release assets. The current release retains the former
+   NotebookLM filenames:
    - `zotero-notebook-lm.xpi`
    - `zotero-notebooklm-chrome-extension.zip`
 3. Unzip `zotero-notebooklm-chrome-extension.zip` somewhere you can keep it.
@@ -71,7 +76,7 @@ If there is not a published release yet, use the source build steps below.
 3. Click **Load unpacked**.
 4. Select the unzipped Chrome extension folder. It should be the folder that
    contains `manifest.json`.
-5. Optional: pin **Zotero → NotebookLM** to your Chrome toolbar.
+5. Optional: pin **Zotero → Gemini Notebook** to your Chrome toolbar.
 
 To update the Chrome extension later, download the latest release, unzip the new
 Chrome extension package, then use **Reload** on `chrome://extensions/`.
@@ -98,8 +103,8 @@ pnpm run package:release
 The generated install files are:
 
 ```text
-.scaffold/build/zotero-notebook-lm.xpi
-.scaffold/build/zotero-notebooklm-chrome-extension.zip
+.scaffold/build/zotero-gemini-notebook.xpi
+.scaffold/build/zotero-gemini-notebook-chrome-extension.zip
 ```
 
 Install those files using the same Zotero and Chrome steps above.
@@ -108,22 +113,22 @@ Install those files using the same Zotero and Chrome steps above.
 
 ### Step 1: Stage Sources in Zotero
 
-1. Open Zotero and go to **Tools → Export to NotebookLM...**
+1. Open Zotero and go to **Tools → Export to Gemini Notebook...**
 2. Browse the collection tree on the left to find your subcollection
 3. Use the search box to filter items by title, author, or year
 4. Click items to select them (checked items will be exported). Items without a valid PDF attachment are greyed out.
-5. Click **Export to NotebookLM** to stage the selected files
+5. Click **Export to Gemini Notebook** to stage the selected files
 
-### Step 2: Import into NotebookLM
+### Step 2: Import into Gemini Notebook
 
-1. Open [notebooklm.google.com](https://notebooklm.google.com) in Chrome. You
-   may open an existing notebook, or start from the main NotebookLM page and let
-   the extension create a new notebook.
-2. Click the Zotero → NotebookLM extension icon in your Chrome toolbar
+1. Open [Gemini Notebook](https://notebooklm.google.com) in Chrome. You may open
+   an existing notebook, or start from the main page and let the extension
+   create a new notebook.
+2. Click the Zotero → Gemini Notebook extension icon in your Chrome toolbar
 3. The popup will show your staged sources with a green "Zotero connected" indicator
-4. Click **Import to NotebookLM**
+4. Click **Import to Gemini Notebook**
 5. The extension will fetch each file from Zotero, then upload them all to
-   NotebookLM's sources panel.
+   Gemini Notebook's sources panel.
 
 ### Tips
 
@@ -131,10 +136,10 @@ Install those files using the same Zotero and Chrome steps above.
   Zotero's local server.
 - You can deselect items in the Chrome popup if you change your mind
 - After a successful import, staged items are automatically cleared
-- Keep the NotebookLM tab open until the import starts.
-- If the import does not start, use **Add sources** in NotebookLM to open the
+- Keep the Gemini Notebook tab open until the import starts.
+- If the import does not start, use **Add sources** in Gemini Notebook to open the
   file dialog, then click **Upload files**.
-- If the import fails, refresh the NotebookLM tab and try again.
+- If the import fails, refresh the Gemini Notebook tab and try again.
 
 ## Development
 
@@ -152,10 +157,10 @@ pnpm run lint:check
 
 ## Known Issues
 
-- Large batches may take longer to start because NotebookLM creates its upload
-  controls asynchronously.
-- NotebookLM's DOM structure may change without notice, which could break the
-  upload mechanism.
+- Large batches may take longer to start because Gemini Notebook creates its
+  upload controls asynchronously.
+- Gemini Notebook's DOM structure may change without notice, which could break
+  the upload mechanism.
 
 ## License
 

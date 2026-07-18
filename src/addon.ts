@@ -13,7 +13,7 @@ class Addon {
     locale?: {
       current: any;
     };
-    // Staged items for NotebookLM export
+    // Staged items for Gemini Notebook export
     stagedItems: Map<number, StagedItem>;
     stagedTimestamp: number | null;
   };

@@ -51,7 +51,7 @@ async function loadPending() {
     dot.className = "status-dot error";
     statusText.textContent = "Cannot reach Zotero — is it running?";
     emptyState.innerHTML =
-      "<p><b>Zotero not detected</b></p><p>Make sure Zotero is open and the NotebookLM plugin is installed.</p>";
+      "<p><b>Zotero not detected</b></p><p>Make sure Zotero is open and the Gemini Notebook plugin is installed.</p>";
     emptyState.style.display = "";
     itemList.style.display = "none";
     instructions.style.display = "none";
@@ -107,8 +107,8 @@ function updateImportBtn() {
   btn.disabled = count === 0;
   btn.textContent =
     count > 0
-      ? `Import ${count} source${count !== 1 ? "s" : ""} to NotebookLM`
-      : "Import to NotebookLM";
+      ? `Import ${count} source${count !== 1 ? "s" : ""} to Gemini Notebook`
+      : "Import to Gemini Notebook";
 }
 
 async function doImport() {
@@ -129,10 +129,10 @@ async function doImport() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!isNotebookLMPage(tab?.url)) {
     progressText.textContent =
-      "Please open NotebookLM before importing sources.";
+      "Please open Gemini Notebook before importing sources.";
     progressFill.style.width = "0%";
     btn.disabled = false;
-    btn.textContent = `Import ${toImport.length} sources to NotebookLM`;
+    btn.textContent = `Import ${toImport.length} sources to Gemini Notebook`;
     return;
   }
 
@@ -141,10 +141,10 @@ async function doImport() {
     await chrome.tabs.sendMessage(tab.id, { action: "ping" });
   } catch {
     progressText.textContent =
-      "Content script not loaded — please refresh the NotebookLM tab and try again.";
+      "Content script not loaded — please refresh the Gemini Notebook tab and try again.";
     progressFill.style.width = "0%";
     btn.disabled = false;
-    btn.textContent = `Import ${toImport.length} sources to NotebookLM`;
+    btn.textContent = `Import ${toImport.length} sources to Gemini Notebook`;
     return;
   }
 
@@ -181,7 +181,7 @@ async function doImport() {
   // the popup so the page regains focus.  NotebookLM's Angular lifecycle
   // is paused while the extension popup holds focus — closing the popup
   // lets Angular create the file input immediately.
-  progressText.textContent = `Uploading ${files.length} files to NotebookLM...`;
+  progressText.textContent = `Uploading ${files.length} files to Gemini Notebook...`;
   progressFill.style.width = "60%";
 
   try {
@@ -206,7 +206,7 @@ async function doImport() {
     // A small delay lets the sendMessage dispatch first.
     setTimeout(() => window.close(), 200);
   } catch (e) {
-    progressText.textContent = `Error uploading to NotebookLM: ${e.message}`;
+    progressText.textContent = `Error uploading to Gemini Notebook: ${e.message}`;
     btn.disabled = false;
     btn.textContent = `Retry Import`;
   }
