@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Build and lint
+    name: Build, package, and lint
     runs-on: ubuntu-latest
 
     steps:
@@ -38,8 +38,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm run build
+      - name: Build and validate release packages
+        run: pnpm run package:release
 
       - name: Check formatting and lint
         run: pnpm run lint:check

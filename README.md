@@ -151,9 +151,13 @@ in `chrome://extensions/` and click **Reload** after editing extension files.
 Before opening a PR, run:
 
 ```bash
-pnpm run build
+pnpm run package:release
 pnpm run lint:check
 ```
+
+Maintainers should follow the
+[release and auto-update checklist](docs/releasing.md) before publishing a new
+version.
 
 ## Known Issues
 
