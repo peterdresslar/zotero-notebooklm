@@ -4,6 +4,7 @@ import { isWindowAlive } from "../utils/window";
 import { getLibraries, getCollectionTree, flattenTree } from "./collections";
 import { getItemsForCollection, searchItems } from "./items";
 import { stageItems } from "./staging";
+import { showStagingSuccess } from "./stagingAction";
 import type { CollectionNode, ItemRow, StagedItem } from "../types";
 
 let dialogWindow: Window | null = null;
@@ -540,16 +541,5 @@ async function doExport(state: DialogState) {
 
   stageItems(selectedItems);
   state.win.close();
-
-  // Show toast notification
-  new ztoolkit.ProgressWindow(config.addonName, {
-    closeOnClick: true,
-    closeTime: 8000,
-  })
-    .createLine({
-      text: `${selectedItems.length} item${selectedItems.length === 1 ? "" : "s"} staged. Open Zotero → Gemini Notebook in Chrome to create your notebook.`,
-      type: "success",
-      progress: 100,
-    })
-    .show();
+  showStagingSuccess(selectedItems.length);
 }

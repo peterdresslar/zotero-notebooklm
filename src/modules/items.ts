@@ -1,5 +1,25 @@
-import type { ItemRow } from "../types";
+import type { ItemRow, StagedItem } from "../types";
 import { getValidAttachment } from "../utils/attachment";
+
+export async function toStagedItem(
+  item: Zotero.Item,
+): Promise<StagedItem | null> {
+  if (!item.isRegularItem()) return null;
+
+  const attachment = await getValidAttachment(item);
+  if (!attachment) return null;
+
+  return {
+    itemId: item.id,
+    title: (item.getField("title") as string) || "(Untitled)",
+    creators: formatCreators(item),
+    year: (item.getField("year") as string) || "",
+    attachmentId: attachment.attachmentId,
+    contentType: attachment.contentType,
+    fileName: attachment.fileName,
+    filePath: attachment.filePath,
+  };
+}
 
 export async function getItemsForCollection(
   collectionId: number,
