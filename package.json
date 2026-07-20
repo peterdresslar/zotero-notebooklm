@@ -1,7 +1,7 @@
 {
   "name": "zotero-gemini-notebook",
   "type": "module",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Export Zotero items to Gemini Notebook (formerly NotebookLM)",
   "config": {
     "addonName": "Zotero Gemini Notebook",
@@ -12,8 +12,7 @@
   },
   "companionCompatibility": {
     "validVersions": [
-      "0.2.0",
-      "0.3.0"
+      "0.3.1"
     ]
   },
   "repository": {
@@ -37,7 +36,7 @@
     "release:check": "pnpm run test:release && node scripts/validate-release.mjs",
     "release:verify-published": "node scripts/validate-release.mjs --published",
     "test": "zotero-plugin test",
-    "test:release": "node --test scripts/validate-release.test.mjs scripts/compatibility.test.mjs",
+    "test:release": "node --test scripts/validate-release.test.mjs scripts/compatibility.test.mjs scripts/upload-transfer.test.mjs",
     "update-deps": "pnpm update"
   },
   "dependencies": {

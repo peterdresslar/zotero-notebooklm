@@ -1,12 +1,75 @@
 // Content script (isolated world) for notebooklm.google.com
 // Communicates with injector.js (main world) via window.postMessage
 
+const { createBatch } = globalThis.ZoteroUploadTransfer;
+const UPLOAD_BATCH_EXPIRY_MS = 5 * 60 * 1000;
+let pendingUploadBatch = null;
+let pendingUploadBatchTimer = null;
+let uploadInProgress = false;
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg.action === "uploadBatch") {
-    uploadBatch(msg.files)
-      .then(() => sendResponse({ success: true }))
-      .catch((e) => sendResponse({ success: false, error: e.message }));
-    return true;
+  if (msg.action === "uploadBatchBegin") {
+    try {
+      if (uploadInProgress) {
+        throw new Error("An upload is already in progress");
+      }
+      clearPendingUploadBatch();
+      pendingUploadBatch = createBatch(msg.batchId, msg.fileCount);
+      schedulePendingUploadBatchExpiry();
+      sendResponse({ success: true });
+    } catch (error) {
+      sendResponse({ success: false, error: error.message });
+    }
+    return;
+  }
+
+  if (msg.action === "uploadBatchChunk") {
+    try {
+      if (!pendingUploadBatch) {
+        throw new Error("No upload batch is ready to receive data");
+      }
+      pendingUploadBatch.addChunk(msg);
+      schedulePendingUploadBatchExpiry();
+      sendResponse({ success: true });
+    } catch (error) {
+      sendResponse({ success: false, error: error.message });
+    }
+    return;
+  }
+
+  if (msg.action === "uploadBatchAbort") {
+    if (pendingUploadBatch?.batchId === msg.batchId) {
+      clearPendingUploadBatch();
+    }
+    sendResponse({ success: true });
+    return;
+  }
+
+  if (msg.action === "uploadBatchCommit") {
+    try {
+      if (!pendingUploadBatch) {
+        throw new Error("No upload batch is ready to commit");
+      }
+      if (pendingUploadBatch.batchId !== msg.batchId) {
+        throw new Error("Upload batch identifier does not match");
+      }
+      const files = pendingUploadBatch.finalize();
+      clearPendingUploadBatch();
+      uploadInProgress = true;
+      sendResponse({ success: true });
+      setTimeout(() => {
+        void uploadBatch(files)
+          .catch((error) => {
+            console.error("[Zotero content] Upload failed:", error);
+          })
+          .finally(() => {
+            uploadInProgress = false;
+          });
+      }, 0);
+    } catch (error) {
+      sendResponse({ success: false, error: error.message });
+    }
+    return;
   }
 
   if (msg.action === "ping") {
@@ -14,6 +77,20 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     return;
   }
 });
+
+function schedulePendingUploadBatchExpiry() {
+  if (pendingUploadBatchTimer) clearTimeout(pendingUploadBatchTimer);
+  pendingUploadBatchTimer = setTimeout(() => {
+    console.warn("[Zotero content] Discarding an incomplete upload batch");
+    clearPendingUploadBatch();
+  }, UPLOAD_BATCH_EXPIRY_MS);
+}
+
+function clearPendingUploadBatch() {
+  if (pendingUploadBatchTimer) clearTimeout(pendingUploadBatchTimer);
+  pendingUploadBatchTimer = null;
+  pendingUploadBatch = null;
+}
 
 const UPLOAD_CONTROL_LABELS = [
   "upload files",

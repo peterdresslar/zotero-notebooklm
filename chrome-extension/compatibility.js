@@ -3,8 +3,8 @@ export function isChromeCompanionVersionCompatible(
   installedVersion,
 ) {
   // The published v0.2.0 Zotero plugin predates compatibility metadata. Its
-  // endpoint contract remains compatible with the v0.3.0 companion, so allow
-  // that one-way upgrade path. Newer backends must send an explicit list.
+  // endpoint contract remains compatible with newer companions, so allow that
+  // one-way upgrade path. Newer backends must send an explicit list.
   if (compatibleVersions === undefined) return true;
 
   return (

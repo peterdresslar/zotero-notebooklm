@@ -2,6 +2,7 @@ import nodeAssert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  assertChromeRuntimePackage,
   assertUpdateManifest,
   parseUpdateHash,
   releaseContext,
@@ -9,13 +10,13 @@ import {
 
 const packageJSON = {
   name: "zotero-gemini-notebook",
-  version: "0.3.0",
+  version: "0.3.1",
   config: {
     addonName: "Zotero Gemini Notebook",
     addonID: "zotero-notebooklm@peterdresslar.com",
   },
   companionCompatibility: {
-    validVersions: ["0.2.0", "0.3.0"],
+    validVersions: ["0.3.1"],
   },
   repository: {
     url: "git+https://github.com/peterdresslar/zotero-gemini-notebook.git",
@@ -26,6 +27,30 @@ const compatibility = {
   strict_min_version: "6.999",
   strict_max_version: "9.*",
 };
+
+const chromeManifest = {
+  version: "0.3.1",
+  content_scripts: [
+    {
+      matches: ["https://notebooklm.google.com/*"],
+      js: ["upload-transfer.js", "content.js"],
+    },
+  ],
+};
+
+const popupHTML = `
+  <!doctype html>
+  <script src="upload-transfer.js"></script>
+  <script type="module" src="popup.js"></script>
+`;
+
+const chromePackageEntries = [
+  "manifest.json",
+  "upload-transfer.js",
+  "content.js",
+  "popup.html",
+  "popup.js",
+];
 
 function updateManifest(expected, overrides = {}) {
   return {
@@ -62,7 +87,7 @@ test("release context pins the stable identity and URLs", () => {
   );
   nodeAssert.equal(
     context.xpiURL,
-    "https://github.com/peterdresslar/zotero-gemini-notebook/releases/download/v0.3.0/zotero-gemini-notebook.xpi",
+    "https://github.com/peterdresslar/zotero-gemini-notebook/releases/download/v0.3.1/zotero-gemini-notebook.xpi",
   );
 });
 
@@ -90,10 +115,10 @@ test("release context rejects a companion excluded by its paired plugin", () => 
       releaseContext({
         ...packageJSON,
         companionCompatibility: {
-          validVersions: ["0.2.0"],
+          validVersions: ["0.3.0"],
         },
       }),
-    /Chrome extension 0\.3\.0 must be compatible/,
+    /Chrome extension 0\.3\.1 must be compatible/,
   );
 });
 
@@ -101,8 +126,8 @@ test("release context rejects invalid companion allowlists", () => {
   for (const validVersions of [
     undefined,
     [],
-    ["0.3.0", null],
-    ["0.3.0", "0.3.0"],
+    ["0.3.1", null],
+    ["0.3.1", "0.3.1"],
   ]) {
     nodeAssert.throws(() =>
       releaseContext({
@@ -112,6 +137,97 @@ test("release context rejects invalid companion allowlists", () => {
       }),
     );
   }
+});
+
+test("Chrome runtime package includes and loads the transfer helper", () => {
+  nodeAssert.doesNotThrow(() =>
+    assertChromeRuntimePackage(chromeManifest, popupHTML, chromePackageEntries),
+  );
+});
+
+test("Chrome runtime package rejects a missing transfer helper", () => {
+  nodeAssert.throws(
+    () =>
+      assertChromeRuntimePackage(
+        chromeManifest,
+        popupHTML,
+        chromePackageEntries.filter((entry) => entry !== "upload-transfer.js"),
+      ),
+    /must include upload-transfer\.js/,
+  );
+});
+
+test("Chrome content script loads the transfer helper before content.js", () => {
+  nodeAssert.throws(
+    () =>
+      assertChromeRuntimePackage(
+        {
+          ...chromeManifest,
+          content_scripts: [
+            {
+              ...chromeManifest.content_scripts[0],
+              js: ["content.js"],
+            },
+          ],
+        },
+        popupHTML,
+        chromePackageEntries,
+      ),
+    /must load upload-transfer\.js with content\.js/,
+  );
+  nodeAssert.throws(
+    () =>
+      assertChromeRuntimePackage(
+        {
+          ...chromeManifest,
+          content_scripts: [
+            {
+              ...chromeManifest.content_scripts[0],
+              js: ["content.js", "upload-transfer.js"],
+            },
+          ],
+        },
+        popupHTML,
+        chromePackageEntries,
+      ),
+    /must load upload-transfer\.js before content\.js/,
+  );
+});
+
+test("Chrome popup loads the transfer helper before module popup.js", () => {
+  nodeAssert.throws(
+    () =>
+      assertChromeRuntimePackage(
+        chromeManifest,
+        '<script type="module" src="popup.js"></script>',
+        chromePackageEntries,
+      ),
+    /popup\.html must load upload-transfer\.js/,
+  );
+  nodeAssert.throws(
+    () =>
+      assertChromeRuntimePackage(
+        chromeManifest,
+        `
+          <script type="module" src="popup.js"></script>
+          <script src="upload-transfer.js"></script>
+        `,
+        chromePackageEntries,
+      ),
+    /must load upload-transfer\.js before popup\.js/,
+  );
+  nodeAssert.throws(
+    () =>
+      assertChromeRuntimePackage(
+        chromeManifest,
+        `
+          <script src="upload-transfer.js"></script>
+          <script src="popup.js"></script>
+        `,
+        chromePackageEntries,
+      ),
+    /must load popup\.js as a module/,
+  );
 });
 
 test("update hashes accept supported SHA-512 values", () => {

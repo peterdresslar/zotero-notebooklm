@@ -5,9 +5,9 @@
 > integration identifiers remain supported.
 
 > **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is
-> improved. The v0.2.0 Chrome companion remains compatible with v0.3.0, but
-> updating it is recommended for Gemini Notebook branding and future
-> compatibility warnings.
+> improved. Version 0.3.1 also fixes large transfers that exceeded Chrome's
+> 64 MiB extension-message limit. The unpacked Chrome companion must be updated
+> manually to receive this fix.
 
 Want an easier way to build notebooks in Gemini Notebook from Zotero files on
 your computer? This connector lets you browse your Zotero collections, stage

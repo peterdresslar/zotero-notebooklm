@@ -6,7 +6,7 @@ Zotero update manifest.
 
 Two GitHub releases are involved:
 
-- A versioned release such as `v0.3.0` holds the installable `.xpi` and Chrome
+- A versioned release such as `v0.3.1` holds the installable `.xpi` and Chrome
   extension `.zip`.
 - The prerelease tagged `release` holds the stable `update.json` and beta
   `update-beta.json` at URLs that do not change between versions.
@@ -15,7 +15,7 @@ The Zotero add-on ID is permanently
 `zotero-notebooklm@peterdresslar.com`. Renaming it would create a different
 plugin and strand existing installations.
 
-The examples below assume an upgrade from `v0.2.0` to `v0.3.0`. Substitute the
+The examples below assume an upgrade from `v0.2.0` to `v0.3.1`. Substitute the
 actual previous and new versions in later releases.
 
 Published `v0.2.0` installations also contain an update URL under the former
@@ -51,7 +51,9 @@ that redirect and strand those installations.
    declared update hash.
 
 6. Install the candidate `.xpi` and unpacked Chrome extension from
-   `.scaffold/build/`. Complete a Zotero-to-Gemini Notebook transfer.
+   `.scaffold/build/`. Complete a Zotero-to-Gemini Notebook transfer. For
+   transport changes, include a batch whose combined source size exercises the
+   chunked path beyond Chrome's 64 MiB extension-message limit.
 7. Open and merge the PR only after CI and manual testing pass.
 
 ## 2. Rebuild From Clean `main`
@@ -75,8 +77,8 @@ newly rebuilt files rather than artifacts retained from the PR branch.
 Create and push an annotated tag for the exact merged commit:
 
 ```bash
-git tag -a v0.3.0 -m "Release v0.3.0"
-git push origin v0.3.0
+git tag -a v0.3.1 -m "Release v0.3.1"
+git push origin v0.3.1
 ```
 
 Create a draft GitHub release for that existing tag and attach both installable
@@ -85,7 +87,7 @@ packages plus the generated manifest from `.scaffold/build/`. Use
 not mark it latest yet:
 
 ```bash
-gh release create v0.3.0 \
+gh release create v0.3.1 \
   .scaffold/build/zotero-gemini-notebook.xpi \
   .scaffold/build/zotero-gemini-notebook-chrome-extension.zip \
   .scaffold/build/update.json \
@@ -93,8 +95,8 @@ gh release create v0.3.0 \
   --verify-tag \
   --draft \
   --latest=false \
-  --title "Zotero Gemini Notebook v0.3.0" \
-  --notes-file docs/releases/v0.3.0.md
+  --title "Zotero Gemini Notebook v0.3.1" \
+  --notes-file docs/releases/v0.3.1.md
 ```
 
 The release must contain:
@@ -111,7 +113,7 @@ anonymously downloadable, but existing Zotero installations will not discover
 the new version until `release/update.json` changes.
 
 ```bash
-gh release edit v0.3.0 \
+gh release edit v0.3.1 \
   --repo peterdresslar/zotero-gemini-notebook \
   --draft=false \
   --latest=false
@@ -134,12 +136,12 @@ First copy the new manifest to a versioned candidate name, upload it without
 replacing the working manifest, and validate its anonymously accessible URL:
 
 ```bash
-cp .scaffold/build/update.json /tmp/update-v0.3.0.candidate.json
+cp .scaffold/build/update.json /tmp/update-v0.3.1.candidate.json
 gh release upload release \
-  /tmp/update-v0.3.0.candidate.json \
+  /tmp/update-v0.3.1.candidate.json \
   --repo peterdresslar/zotero-gemini-notebook
 pnpm run release:verify-published \
-  --manifest-url https://github.com/peterdresslar/zotero-gemini-notebook/releases/download/release/update-v0.3.0.candidate.json
+  --manifest-url https://github.com/peterdresslar/zotero-gemini-notebook/releases/download/release/update-v0.3.1.candidate.json
 ```
 
 Find the API URLs for the working manifest and verified candidate:
@@ -152,7 +154,7 @@ current_update_asset_endpoint="$(gh release view release \
 candidate_update_asset_endpoint="$(gh release view release \
   --repo peterdresslar/zotero-gemini-notebook \
   --json assets \
-  --jq '.assets[] | select(.name == "update-v0.3.0.candidate.json") | .apiUrl | sub("^https://api.github.com/"; "")')"
+  --jq '.assets[] | select(.name == "update-v0.3.1.candidate.json") | .apiUrl | sub("^https://api.github.com/"; "")')"
 ```
 
 Stop unless both variables contain a GitHub API endpoint. Preserve the old
@@ -195,9 +197,9 @@ publishing the manifest. After `release/update.json` changes:
    reinstallation.
 4. Restart Zotero and confirm that the add-on remains enabled and retains its
    preferences.
-5. Complete one Zotero-to-Gemini Notebook transfer with the oldest companion
-   version still declared compatible, then repeat with the companion packaged
-   in the new release.
+5. Complete a Zotero-to-Gemini Notebook transfer with the companion packaged in
+   the new release. When an older companion remains declared compatible, test
+   the oldest retained version as well.
 
 Record the Zotero, Chrome, and operating-system versions tested in the GitHub
 release or release issue.
@@ -218,7 +220,7 @@ backup_update_asset_endpoint="$(gh release view release \
   --json assets \
   --jq '.assets[] | select(.name == "update-v0.2.0.backup.json") | .apiUrl | sub("^https://api.github.com/"; "")')"
 gh api --method PATCH "$failed_update_asset_endpoint" \
-  -f name=update-v0.3.0.failed.json
+  -f name=update-v0.3.1.failed.json
 gh api --method PATCH "$backup_update_asset_endpoint" \
   -f name=update.json
 pnpm run release:verify-published \
@@ -238,7 +240,7 @@ After the automatic upgrade succeeds:
    release as latest:
 
    ```bash
-   gh release edit v0.3.0 \
+   gh release edit v0.3.1 \
      --repo peterdresslar/zotero-gemini-notebook \
      --latest
    ```
