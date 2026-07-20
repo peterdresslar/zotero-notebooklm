@@ -8,6 +8,7 @@ const ZOTERO_JSON_HEADERS = {
   ...ZOTERO_REQUEST_HEADERS,
   "Content-Type": "application/json",
 };
+const { splitBase64IntoChunks } = globalThis.ZoteroUploadTransfer;
 
 let stagedItems = [];
 let selectedIds = new Set();
@@ -209,14 +210,22 @@ async function doImport() {
     return;
   }
 
-  // Phase 1: Fetch ALL files from Zotero first
-  const files = [];
-  for (let i = 0; i < toImport.length; i++) {
-    const item = toImport[i];
-    progressText.textContent = `Fetching from Zotero: ${item.fileName} (${i + 1}/${toImport.length})`;
-    progressFill.style.width = `${((i + 0.5) / toImport.length) * 50}%`; // first 50% is fetching
+  const batchId = globalThis.crypto.randomUUID();
+  let batchStarted = false;
 
-    try {
+  try {
+    await sendUploadTransferMessage(tab.id, {
+      action: "uploadBatchBegin",
+      batchId,
+      fileCount: toImport.length,
+    });
+    batchStarted = true;
+
+    for (let i = 0; i < toImport.length; i++) {
+      const item = toImport[i];
+      progressText.textContent = `Fetching from Zotero: ${item.fileName} (${i + 1}/${toImport.length})`;
+      progressFill.style.width = `${(i / toImport.length) * 50}%`;
+
       const fileRes = await fetch(`${ZOTERO_BASE}/file`, {
         method: "POST",
         headers: ZOTERO_JSON_HEADERS,
@@ -224,36 +233,35 @@ async function doImport() {
       });
       if (!fileRes.ok) throw new Error(`Failed to fetch ${item.fileName}`);
       const fileData = await fileRes.json();
+      const chunks = splitBase64IntoChunks(fileData.data);
 
-      files.push({
-        fileName: fileData.fileName,
-        contentType: fileData.contentType,
-        base64Data: fileData.data,
-      });
-    } catch (e) {
-      progressText.textContent = `Error fetching ${item.fileName}: ${e.message}`;
-      btn.disabled = false;
-      btn.textContent = `Retry Import`;
-      return;
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+        progressText.textContent = `Preparing ${fileData.fileName}: part ${chunkIndex + 1}/${chunks.length}`;
+        progressFill.style.width = `${((i + (chunkIndex + 1) / chunks.length) / toImport.length) * 50}%`;
+        await sendUploadTransferMessage(tab.id, {
+          action: "uploadBatchChunk",
+          batchId,
+          fileIndex: i,
+          chunkIndex,
+          chunkCount: chunks.length,
+          fileName: fileData.fileName,
+          contentType: fileData.contentType,
+          data: chunks[chunkIndex],
+        });
+      }
     }
-  }
 
-  // Phase 2: Send ALL files to content script in one batch, then close
-  // the popup so the page regains focus.  NotebookLM's Angular lifecycle
-  // is paused while the extension popup holds focus — closing the popup
-  // lets Angular create the file input immediately.
-  progressText.textContent = `Uploading ${files.length} files to Gemini Notebook...`;
-  progressFill.style.width = "60%";
+    progressText.textContent = `Uploading ${toImport.length} files to Gemini Notebook...`;
+    progressFill.style.width = "60%";
 
-  try {
-    // Fire the message — don't await the response.  The content script
-    // keeps running after the popup closes.
-    chrome.tabs.sendMessage(tab.id, {
-      action: "uploadBatch",
-      files: files,
+    await sendUploadTransferMessage(tab.id, {
+      action: "uploadBatchCommit",
+      batchId,
     });
+    batchStarted = false;
 
-    // Clear staged items from Zotero optimistically
+    // The content script now holds the complete batch. Clear staging only
+    // after commit succeeds, then close the popup so Gemini Notebook can run.
     try {
       await fetch(`${ZOTERO_BASE}/clear`, {
         method: "DELETE",
@@ -267,10 +275,28 @@ async function doImport() {
     // A small delay lets the sendMessage dispatch first.
     setTimeout(() => window.close(), 200);
   } catch (e) {
+    if (batchStarted) {
+      try {
+        await chrome.tabs.sendMessage(tab.id, {
+          action: "uploadBatchAbort",
+          batchId,
+        });
+      } catch {
+        // The tab may have navigated or reloaded. Zotero staging stays intact.
+      }
+    }
     progressText.textContent = `Error uploading to Gemini Notebook: ${e.message}`;
     btn.disabled = false;
     btn.textContent = `Retry Import`;
   }
+}
+
+async function sendUploadTransferMessage(tabId, message) {
+  const response = await chrome.tabs.sendMessage(tabId, message);
+  if (!response?.success) {
+    throw new Error(response?.error || "Chrome could not transfer the upload");
+  }
+  return response;
 }
 
 function getTypeLabel(contentType) {

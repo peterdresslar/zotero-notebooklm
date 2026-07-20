@@ -4,7 +4,14 @@ import { execFileSync } from "node:child_process";
 import { Buffer } from "node:buffer";
 import console from "node:console";
 import { createHash } from "node:crypto";
-import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import {
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import process from "node:process";
@@ -18,6 +25,7 @@ const stablePackageName = "zotero-gemini-notebook";
 const legacyRepository = "peterdresslar/zotero-notebooklm";
 const legacyPublishedVersion = "0.2.0";
 const allowedHashAlgorithms = new Set(["sha256", "sha512"]);
+const uploadTransferFilename = "upload-transfer.js";
 
 function assert(condition, message) {
   if (!condition) {
@@ -76,10 +84,9 @@ function readArchiveJSON(archivePath, entryPath) {
   }
 }
 
-function assertArchiveHygiene(archivePath) {
-  let entries;
+function listArchiveEntries(archivePath) {
   try {
-    entries = execFileSync("unzip", ["-Z1", archivePath], {
+    return execFileSync("unzip", ["-Z1", archivePath], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     })
@@ -90,7 +97,12 @@ function assertArchiveHygiene(archivePath) {
       cause: error,
     });
   }
+}
 
+function assertArchiveHygiene(
+  archivePath,
+  entries = listArchiveEntries(archivePath),
+) {
   const unwanted = entries.filter(
     (entry) =>
       entry.includes("__MACOSX/") ||
@@ -299,6 +311,70 @@ function assertChromeManifest(manifest, expected) {
   );
 }
 
+function assertChromeRuntimePackage(
+  manifest,
+  popupHTML,
+  packageEntries,
+  description = "Chrome extension",
+) {
+  assert(
+    packageEntries.includes(uploadTransferFilename),
+    `${description} must include ${uploadTransferFilename}`,
+  );
+
+  const contentScript = manifest.content_scripts?.find((entry) =>
+    entry.js?.includes("content.js"),
+  );
+  assert(
+    contentScript,
+    `${description} manifest must load content.js as a content script`,
+  );
+  const contentScriptIndex = contentScript.js.indexOf("content.js");
+  const transferScriptIndex = contentScript.js.indexOf(uploadTransferFilename);
+  assert(
+    transferScriptIndex !== -1,
+    `${description} manifest must load ${uploadTransferFilename} with content.js`,
+  );
+  assert(
+    transferScriptIndex < contentScriptIndex,
+    `${description} manifest must load ${uploadTransferFilename} before content.js`,
+  );
+
+  const scriptTags = Array.from(
+    popupHTML.matchAll(/<script\b(?<attributes>[^>]*)>/giu),
+    (match) => {
+      const attributes = match.groups?.attributes ?? "";
+      const source = /\bsrc\s*=\s*["'](?<source>[^"']+)["']/iu.exec(attributes)
+        ?.groups?.source;
+      const type = /\btype\s*=\s*["'](?<type>[^"']+)["']/iu.exec(attributes)
+        ?.groups?.type;
+      return { source, type };
+    },
+  );
+  const popupScriptIndex = scriptTags.findIndex(
+    ({ source }) => source === "popup.js",
+  );
+  const popupTransferIndex = scriptTags.findIndex(
+    ({ source }) => source === uploadTransferFilename,
+  );
+  assert(
+    popupTransferIndex !== -1,
+    `${description} popup.html must load ${uploadTransferFilename}`,
+  );
+  assert(
+    popupScriptIndex !== -1,
+    `${description} popup.html must load popup.js`,
+  );
+  assert(
+    scriptTags[popupScriptIndex].type?.toLowerCase() === "module",
+    `${description} popup.html must load popup.js as a module`,
+  );
+  assert(
+    popupTransferIndex < popupScriptIndex,
+    `${description} popup.html must load ${uploadTransferFilename} before popup.js`,
+  );
+}
+
 function parseUpdateHash(updateHash) {
   assert(
     typeof updateHash === "string",
@@ -378,11 +454,23 @@ async function assertUpdateHash(path, parsedHash) {
 
 async function validateLocalRelease(packageJSON) {
   const expected = releaseContext(packageJSON);
+  const chromeSourceDirectory = join(projectRoot, "chrome-extension");
   const sourceChromeManifest = await readJSON(
-    join(projectRoot, "chrome-extension", "manifest.json"),
+    join(chromeSourceDirectory, "manifest.json"),
     "Chrome extension source manifest",
   );
   assertChromeManifest(sourceChromeManifest, expected);
+  const sourcePopupHTML = await readFile(
+    join(chromeSourceDirectory, "popup.html"),
+    "utf8",
+  );
+  const sourceChromeEntries = await readdir(chromeSourceDirectory);
+  assertChromeRuntimePackage(
+    sourceChromeManifest,
+    sourcePopupHTML,
+    sourceChromeEntries,
+    "Chrome extension source",
+  );
 
   const xpiPath = join(buildDirectory, expected.xpiFilename);
   const chromePath = join(buildDirectory, expected.chromeFilename);
@@ -393,12 +481,20 @@ async function validateLocalRelease(packageJSON) {
   assertArchiveIntegrity(xpiPath);
   assertArchiveIntegrity(chromePath);
   assertArchiveHygiene(xpiPath);
-  assertArchiveHygiene(chromePath);
+  const chromeArchiveEntries = listArchiveEntries(chromePath);
+  assertArchiveHygiene(chromePath, chromeArchiveEntries);
 
   const xpiManifest = readArchiveJSON(xpiPath, "manifest.json");
   const chromeManifest = readArchiveJSON(chromePath, "manifest.json");
+  const chromePopupHTML = readArchiveEntry(chromePath, "popup.html");
   const zoteroCompatibility = assertZoteroManifest(xpiManifest, expected);
   assertChromeManifest(chromeManifest, expected);
+  assertChromeRuntimePackage(
+    chromeManifest,
+    chromePopupHTML,
+    chromeArchiveEntries,
+    "Chrome extension package",
+  );
 
   const updateManifest = await readJSON(
     updatePath,
@@ -656,4 +752,9 @@ if (
   });
 }
 
-export { assertUpdateManifest, parseUpdateHash, releaseContext };
+export {
+  assertChromeRuntimePackage,
+  assertUpdateManifest,
+  parseUpdateHash,
+  releaseContext,
+};
