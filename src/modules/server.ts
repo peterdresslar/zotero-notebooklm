@@ -1,4 +1,4 @@
-import { config, version } from "../../package.json";
+import { companionCompatibility, config, version } from "../../package.json";
 import {
   getStagedItems,
   getStagedCount,
@@ -49,6 +49,7 @@ export function registerEndpoints() {
         items: getStagedItems(),
         count: getStagedCount(),
         timestamp: getStagedTimestamp(),
+        compatibleChromeExtensionVersions: companionCompatibility.validVersions,
       };
       sendJSON(sendResponseCallback, 200, response);
     },

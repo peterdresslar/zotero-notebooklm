@@ -95,6 +95,7 @@ function assertArchiveHygiene(archivePath) {
     (entry) =>
       entry.includes("__MACOSX/") ||
       entry.endsWith(".DS_Store") ||
+      entry.includes(".test.") ||
       entry.startsWith(".git/") ||
       entry.includes("/.git/"),
   );
@@ -160,6 +161,30 @@ function releaseContext(packageJSON) {
     packageJSON.name === stablePackageName,
     `Package name must remain ${stablePackageName}`,
   );
+  const compatibleChromeExtensionVersions =
+    packageJSON.companionCompatibility?.validVersions;
+  assert(
+    Array.isArray(compatibleChromeExtensionVersions) &&
+      compatibleChromeExtensionVersions.length > 0,
+    "package.json must declare compatible Chrome extension versions",
+  );
+  assert(
+    compatibleChromeExtensionVersions.every(
+      (candidate) =>
+        typeof candidate === "string" &&
+        /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(candidate),
+    ),
+    "Compatible Chrome extension versions must be valid versions",
+  );
+  assert(
+    new Set(compatibleChromeExtensionVersions).size ===
+      compatibleChromeExtensionVersions.length,
+    "Compatible Chrome extension versions must not contain duplicates",
+  );
+  assert(
+    compatibleChromeExtensionVersions.includes(packageJSON.version),
+    `Chrome extension ${packageJSON.version} must be compatible with its paired Zotero plugin`,
+  );
 
   const prerelease = packageJSON.version.includes("-");
   const updateFilename = prerelease ? "update-beta.json" : "update.json";
@@ -172,6 +197,7 @@ function releaseContext(packageJSON) {
     addonName: packageJSON.config.addonName,
     chromeFilename,
     chromeVersion: packageJSON.version,
+    compatibleChromeExtensionVersions,
     legacyManifestURL: `https://github.com/${legacyRepository}/releases/download/release/${updateFilename}`,
     manifestURL: `${releaseBase}/release/${updateFilename}`,
     prerelease,

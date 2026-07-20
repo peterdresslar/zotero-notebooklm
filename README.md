@@ -4,9 +4,10 @@
 > formerly called Zotero → NotebookLM; existing installations and legacy
 > integration identifiers remain supported.
 
-> **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is improved. If you
-> installed an earlier copy of the Chrome extension, download the latest release
-> and reload the Chrome extension from the new release package.
+> **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is
+> improved. The v0.2.0 Chrome companion remains compatible with v0.3.0, but
+> updating it is recommended for Gemini Notebook branding and future
+> compatibility warnings.
 
 Want an easier way to build notebooks in Gemini Notebook from Zotero files on
 your computer? This connector lets you browse your Zotero collections, stage
@@ -36,11 +37,13 @@ The system has two parts:
 
 1. **Zotero Plugin** — Adds an "Export to Gemini Notebook" dialog to Zotero's
    Tools menu. Browse your collection tree, search/filter items, and select
-   which sources to stage. The plugin starts a local HTTP server that serves
-   only the staged files.
+   which sources to stage. The plugin registers endpoints on Zotero's local
+   HTTP server. The Chrome companion connects through `127.0.0.1`, and file
+   requests are rejected unless the attachment was explicitly staged.
 
 2. **Chrome Extension** — Connects to the Zotero plugin's local server, fetches
-   the staged files, and uploads them into Gemini Notebook.
+   the staged files, and uploads them into Gemini Notebook. Google Chrome is
+   required; Firefox and other browsers are not supported.
 
 ## Installation
 
@@ -51,23 +54,26 @@ or pnpm unless you are building from source.
 
 1. Open the
    [latest release](https://github.com/peterdresslar/zotero-gemini-notebook/releases/latest).
-2. Download both release assets. The current release retains the former
-   NotebookLM filenames:
+2. Download both installable assets. Releases from `v0.3.0` use:
+   - `zotero-gemini-notebook.xpi`
+   - `zotero-gemini-notebook-chrome-extension.zip`
+
+   The `v0.2.0` release retains the former NotebookLM filenames:
    - `zotero-notebook-lm.xpi`
    - `zotero-notebooklm-chrome-extension.zip`
-3. Unzip `zotero-notebooklm-chrome-extension.zip` somewhere you can keep it.
-   Chrome loads the extension from that folder, so do not delete it after
-   installation.
+
+3. Unzip the Chrome extension `.zip` somewhere you can keep it. Chrome loads
+   the extension from that folder, so do not delete it after installation.
 
 If there is not a published release yet, use the source build steps below.
 
 ### Install the Zotero Plugin
 
 1. Open Zotero.
-2. Go to **Tools → Add-ons**.
-3. Click the gear icon and choose **Install Add-on From File...**.
-4. Select `zotero-notebook-lm.xpi`.
-5. Restart Zotero if prompted.
+2. Go to **Tools → Plugins**.
+3. Drag the downloaded `.xpi` onto the Plugins window, or use its gear menu and
+   choose **Install Plugin From File...**.
+4. Restart Zotero if prompted.
 
 ### Install the Chrome Extension
 
@@ -78,8 +84,13 @@ If there is not a published release yet, use the source build steps below.
    contains `manifest.json`.
 5. Optional: pin **Zotero → Gemini Notebook** to your Chrome toolbar.
 
-To update the Chrome extension later, download the latest release, unzip the new
-Chrome extension package, then use **Reload** on `chrome://extensions/`.
+Zotero checks the plugin's update manifest for compatible releases. The unpacked
+Chrome extension does not update automatically: download the latest release,
+replace the files in its existing folder, and click **Reload** on
+`chrome://extensions/`. If you move it to a new folder, remove the old unpacked
+extension and use **Load unpacked** again. From v0.3.0 onward, the Chrome
+companion checks the compatible-version list advertised by the Zotero plugin
+and blocks imports with a reinstall warning if its version is no longer valid.
 
 ### Source Build
 
@@ -91,7 +102,7 @@ Prerequisites:
 - pnpm
 - Git
 - Zotero 7, 8, or 9
-- Chrome or another Chromium browser that can load unpacked extensions
+- Google Chrome (required for the companion extension)
 
 From the repository root:
 
