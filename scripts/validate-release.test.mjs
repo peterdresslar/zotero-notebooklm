@@ -14,6 +14,9 @@ const packageJSON = {
     addonName: "Zotero Gemini Notebook",
     addonID: "zotero-notebooklm@peterdresslar.com",
   },
+  companionCompatibility: {
+    validVersions: ["0.2.0", "0.3.0"],
+  },
   repository: {
     url: "git+https://github.com/peterdresslar/zotero-gemini-notebook.git",
   },
@@ -45,6 +48,10 @@ function updateManifest(expected, overrides = {}) {
 test("release context pins the stable identity and URLs", () => {
   const context = releaseContext(packageJSON);
   nodeAssert.equal(context.addonID, packageJSON.config.addonID);
+  nodeAssert.deepEqual(
+    context.compatibleChromeExtensionVersions,
+    packageJSON.companionCompatibility.validVersions,
+  );
   nodeAssert.equal(
     context.manifestURL,
     "https://github.com/peterdresslar/zotero-gemini-notebook/releases/download/release/update.json",
@@ -75,6 +82,36 @@ test("release context rejects an artifact-name change", () => {
     () => releaseContext({ ...packageJSON, name: "renamed-package" }),
     /Package name must remain zotero-gemini-notebook/,
   );
+});
+
+test("release context rejects a companion excluded by its paired plugin", () => {
+  nodeAssert.throws(
+    () =>
+      releaseContext({
+        ...packageJSON,
+        companionCompatibility: {
+          validVersions: ["0.2.0"],
+        },
+      }),
+    /Chrome extension 0\.3\.0 must be compatible/,
+  );
+});
+
+test("release context rejects invalid companion allowlists", () => {
+  for (const validVersions of [
+    undefined,
+    [],
+    ["0.3.0", null],
+    ["0.3.0", "0.3.0"],
+  ]) {
+    nodeAssert.throws(() =>
+      releaseContext({
+        ...packageJSON,
+        companionCompatibility:
+          validVersions === undefined ? undefined : { validVersions },
+      }),
+    );
+  }
 });
 
 test("update hashes accept supported SHA-512 values", () => {

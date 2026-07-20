@@ -34,6 +34,7 @@ export interface PendingResponse {
   items: StagedItem[];
   count: number;
   timestamp: number | null;
+  compatibleChromeExtensionVersions: string[];
 }
 
 export interface StatusResponse {

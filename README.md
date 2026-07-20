@@ -4,9 +4,10 @@
 > formerly called Zotero → NotebookLM; existing installations and legacy
 > integration identifiers remain supported.
 
-> **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is improved. If you
-> installed an earlier copy of the Chrome extension, download the latest release
-> and reload the Chrome extension from the new release package.
+> **Updated for Zotero 9:** Compatibility is fixed and upload compatibility is
+> improved. The v0.2.0 Chrome companion remains compatible with v0.3.0, but
+> updating it is recommended for Gemini Notebook branding and future
+> compatibility warnings.
 
 Want an easier way to build notebooks in Gemini Notebook from Zotero files on
 your computer? This connector lets you browse your Zotero collections, stage
@@ -87,7 +88,9 @@ Zotero checks the plugin's update manifest for compatible releases. The unpacked
 Chrome extension does not update automatically: download the latest release,
 replace the files in its existing folder, and click **Reload** on
 `chrome://extensions/`. If you move it to a new folder, remove the old unpacked
-extension and use **Load unpacked** again.
+extension and use **Load unpacked** again. From v0.3.0 onward, the Chrome
+companion checks the compatible-version list advertised by the Zotero plugin
+and blocks imports with a reinstall warning if its version is no longer valid.
 
 ### Source Build
 

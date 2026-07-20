@@ -28,7 +28,10 @@ that redirect and strand those installations.
 
 1. Create a release-preparation branch from current `main`.
 2. Update the version in both `package.json` and
-   `chrome-extension/manifest.json`.
+   `chrome-extension/manifest.json`. Update
+   `companionCompatibility.validVersions` in `package.json`; retain an older
+   companion version only when its endpoint and browser-automation behavior are
+   still compatible.
 3. Update release-facing documentation and release notes. Keep “formerly
    NotebookLM” where it helps existing users find the renamed project.
 4. Confirm that `addon/manifest.json` reflects the Zotero versions actually
@@ -192,8 +195,9 @@ publishing the manifest. After `release/update.json` changes:
    reinstallation.
 4. Restart Zotero and confirm that the add-on remains enabled and retains its
    preferences.
-5. Complete one Zotero-to-Gemini Notebook transfer with the matching Chrome
-   companion.
+5. Complete one Zotero-to-Gemini Notebook transfer with the oldest companion
+   version still declared compatible, then repeat with the companion packaged
+   in the new release.
 
 Record the Zotero, Chrome, and operating-system versions tested in the GitHub
 release or release issue.

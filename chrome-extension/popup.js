@@ -1,5 +1,9 @@
+import { isChromeCompanionVersionCompatible } from "./compatibility.js";
+
 const ZOTERO_BASE = "http://127.0.0.1:23119/notebooklm";
 const ZOTERO_REQUEST_HEADERS = { "zotero-allowed-request": "1" };
+const RELEASES_URL =
+  "https://github.com/peterdresslar/zotero-gemini-notebook/releases";
 const ZOTERO_JSON_HEADERS = {
   ...ZOTERO_REQUEST_HEADERS,
   "Content-Type": "application/json",
@@ -7,6 +11,7 @@ const ZOTERO_JSON_HEADERS = {
 
 let stagedItems = [];
 let selectedIds = new Set();
+let companionCompatible = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadPending();
@@ -21,13 +26,28 @@ async function loadPending() {
   const itemList = document.getElementById("item-list");
   const instructions = document.getElementById("instructions");
 
+  companionCompatible = false;
+  updateImportBtn();
+
   try {
     const res = await fetch(`${ZOTERO_BASE}/pending`, {
       headers: ZOTERO_REQUEST_HEADERS,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    const installedVersion = chrome.runtime.getManifest().version;
 
+    if (
+      !isChromeCompanionVersionCompatible(
+        data.compatibleChromeExtensionVersions,
+        installedVersion,
+      )
+    ) {
+      showIncompatibleCompanionWarning(installedVersion);
+      return;
+    }
+
+    companionCompatible = true;
     dot.className = "status-dot connected";
     statusText.textContent = `Zotero connected — ${data.count} source${data.count !== 1 ? "s" : ""} staged`;
 
@@ -48,6 +68,9 @@ async function loadPending() {
     }
     updateImportBtn();
   } catch {
+    companionCompatible = false;
+    stagedItems = [];
+    selectedIds.clear();
     dot.className = "status-dot error";
     statusText.textContent = "Cannot reach Zotero — is it running?";
     emptyState.innerHTML =
@@ -57,6 +80,42 @@ async function loadPending() {
     instructions.style.display = "none";
     updateImportBtn();
   }
+}
+
+function showIncompatibleCompanionWarning(installedVersion) {
+  const dot = document.getElementById("zotero-dot");
+  const statusText = document.getElementById("zotero-status");
+  const emptyState = document.getElementById("empty-state");
+  const itemList = document.getElementById("item-list");
+  const instructions = document.getElementById("instructions");
+
+  dot.className = "status-dot error";
+  statusText.textContent = "Chrome companion update required";
+  emptyState.replaceChildren();
+
+  const heading = document.createElement("p");
+  const strong = document.createElement("b");
+  strong.textContent = `Version ${installedVersion} is not compatible with the installed Zotero plugin`;
+  heading.appendChild(strong);
+
+  const guidance = document.createElement("p");
+  guidance.textContent =
+    "Remove this Chrome extension, download the latest companion, and install it again.";
+
+  const releaseLink = document.createElement("a");
+  releaseLink.href = RELEASES_URL;
+  releaseLink.target = "_blank";
+  releaseLink.rel = "noopener noreferrer";
+  releaseLink.textContent = "View releases and install the newest companion";
+
+  emptyState.append(heading, guidance, releaseLink);
+  emptyState.style.display = "";
+  itemList.style.display = "none";
+  instructions.style.display = "none";
+  companionCompatible = false;
+  stagedItems = [];
+  selectedIds.clear();
+  updateImportBtn();
 }
 
 function renderItems() {
@@ -104,7 +163,7 @@ function renderItems() {
 function updateImportBtn() {
   const btn = document.getElementById("import-btn");
   const count = selectedIds.size;
-  btn.disabled = count === 0;
+  btn.disabled = count === 0 || !companionCompatible;
   btn.textContent =
     count > 0
       ? `Import ${count} source${count !== 1 ? "s" : ""} to Gemini Notebook`
@@ -112,6 +171,8 @@ function updateImportBtn() {
 }
 
 async function doImport() {
+  if (!companionCompatible) return;
+
   const btn = document.getElementById("import-btn");
   const progress = document.getElementById("progress");
   const progressFill = document.getElementById("progress-fill");
