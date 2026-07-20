@@ -91,7 +91,7 @@ gh release create v0.3.0 \
   --draft \
   --latest=false \
   --title "Zotero Gemini Notebook v0.3.0" \
-  --notes-file /path/to/release-notes.md
+  --notes-file docs/releases/v0.3.0.md
 ```
 
 The release must contain:
