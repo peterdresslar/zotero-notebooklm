@@ -124,10 +124,19 @@ Install those files using the same Zotero and Chrome steps above.
 
 ### Step 1: Stage Sources in Zotero
 
+For a quick handoff, select one or more regular items in Zotero's items pane,
+right-click, and choose **Export Selected to Gemini Notebook**. Zotero stages
+the supported local attachments immediately. A selection with at least one
+supported attachment replaces the previously staged batch; an unsupported-only
+selection leaves that batch intact.
+
+For collection browsing, searching, or more deliberate selection:
+
 1. Open Zotero and go to **Tools → Export to Gemini Notebook...**
 2. Browse the collection tree on the left to find your subcollection
 3. Use the search box to filter items by title, author, or year
-4. Click items to select them (checked items will be exported). Items without a valid PDF attachment are greyed out.
+4. Click items to select them (checked items will be exported). Items without a
+   supported local PDF, DOCX, Markdown, or text attachment are greyed out.
 5. Click **Export to Gemini Notebook** to stage the selected files
 
 ### Step 2: Import into Gemini Notebook
